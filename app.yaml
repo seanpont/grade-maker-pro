@@ -1,0 +1,39 @@
+application: grade-maker-pro
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+default_expiration: "5d"
+
+builtins:
+- appstats: on
+- admin_redirect: on
+- deferred: on
+
+libraries:
+- name: webapp2
+  version: "2.5.2"
+- name: ssl
+  version: "2.7"
+
+handlers:
+
+- url: /api/.*
+  script: main.app
+
+- url: /
+  static_files: static/app/index.html
+  upload: static/app/index.html
+
+- url: /
+  static_dir: static/app/
+
+- url: /favicon.ico
+  static_files: /static/app/img/favicon.ico
+  upload: static/app/img/favicon.ico
+
+- url: /robots.txt
+  static_files: /robots.txt
+  upload: static/robots.txt
+
