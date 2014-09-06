@@ -2,21 +2,28 @@
 
 /* Controllers */
 
-var phonecatControllers = angular.module('phonecatControllers', []);
+var graderControllers = angular.module('graderControllers', []);
 
-phonecatControllers.controller('PhoneListCtrl', ['$scope', 'Phone',
-  function($scope, Phone) {
-    $scope.phones = Phone.query();
-    $scope.orderProp = 'age';
-  }]);
-
-phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', 'Phone',
-  function($scope, $routeParams, Phone) {
-    $scope.phone = Phone.get({phoneId: $routeParams.phoneId}, function(phone) {
-      $scope.mainImageUrl = phone.images[0];
-    });
-
-    $scope.setImage = function(imageUrl) {
-      $scope.mainImageUrl = imageUrl;
+graderControllers.controller('SignInCtrl', ['$scope', '$http', 'Data',
+    function ($scope, $http, Data) {
+        $scope.signIn = function() {
+            $http.post('/api/user', {email: $scope.email, password: $scope.password}).
+                success(function(data, status, headers, config) {
+                    console.log("auth success!");
+                    console.log(data);
+                    Data.user = data;
+                }).
+                error(function(data, status, headers, config) {
+                    console.log("auth fail!");
+                    console.log(data);
+                    alert("Email or Password invalid");
+                });
+        }
     }
-  }]);
+]);
+
+graderControllers.controller('HallwayCtrl', ['$scope', 'Grader',
+    function ($scope, Grader) {
+
+    }
+]);

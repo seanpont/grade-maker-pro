@@ -1,4 +1,22 @@
 
+Sign In
+    get user info
+    if none, present sign in page
+    email, password, or google sign-in
 
 
 
+
+API
+
+User
+    /api/user
+        returns current user (teacher)
+
+
+
+
+TODO
+
+google sign in
+    problem encountered: how to handle redirect with single-page app

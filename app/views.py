@@ -16,7 +16,6 @@ from functools import wraps
 from collections import defaultdict
 
 import logging
-import jinja2
 import webapp2
 
 from google.appengine.api import users as google_users
@@ -26,13 +25,11 @@ from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp.blobstore_handlers import BlobstoreUploadHandler, BlobstoreDownloadHandler
 
-import stripe
 from lib.gaesessions import get_current_session
 from lib.itsdangerous import TimestampSigner, BadData
 from lib.secret_keys import TIMESTAMP_SIGNER_KEY
 from lib.router import route, url_for
 from lib.formalin import *
-from content.content_loader import content_for_language
 
 import models
 from utils import *
@@ -52,7 +49,7 @@ class BaseHandler(webapp2.RequestHandler):
         self.user = user_id and models.Users.get_by_id(user_id)
 
     def write(self, d):
-        json_txt = json.dumps(d, default=datetime_handler)
+        json_txt = ")]}',\n" + json.dumps(d, default=datetime_handler)
         self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.write(json_txt)
 
@@ -61,6 +58,21 @@ class BaseHandler(webapp2.RequestHandler):
         if len(args) == 1:
             return self.request.get(args[0])
         return (self.request.get(arg) for arg in args)
+
+    def data(self):
+        logging.info('data: %s' % self.request.body)
+        logging.info(dir(self.request))
+        return json.load(self.request.body_file)
+
+    def datums(self, *args):
+        if len(args) == 1:
+            return self.data().get(args[0])
+        return [self.data().get(arg) for arg in args]
+
+    def check(self, condition, message):
+        if not condition:
+            logging.info(message)
+            self.abort(401, message)
 
 
 def send_mail(user, subject, body, **kwargs):
@@ -71,23 +83,35 @@ def send_mail(user, subject, body, **kwargs):
     mail.send_mail(sender, user.email, subject, body)
 
 
-def user_level(min_level):
-    def user_level_decorator(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            if not self.user or self.user.level < min_level:
-                self.abort(401)
-            return func(self, *args, **kwargs)
+# ===== AUTHENTICATION ==========================================================================
 
-        return wrapper
+@route('/api/user')
+class UserHandler(BaseHandler):
 
-    return user_level_decorator
-
-
-# ===== API ==========================================================================
-
+    def post(self):
+        self.check(not self.user, "user already signed in!")
+        email, password = self.datums('email', 'password')
+        self.check(email and password, "email and password required!")
+        teacher = models.Teacher.get_by_email(email)
+        self.check(teacher and teacher.check_password(password), "Authentication failed: email or password invalid")
+        self.session.put('user_id', teacher.key.id())
+        self.write(teacher)
 
 
+
+@route('/sign-in/google')
+class GoogleSignIn(BaseHandler):
+    def get(self):
+        if self.user:
+            self.abort(401, "User is already signed in")
+        google_user = google_users.get_current_user()
+        if not google_user:
+            return self.redirect(google_users.create_login_url(self.request.url))
+        user = models.Users.find_by_email(google_user.email())
+        if not user:
+            self.bad_news(content_for_language(self.language)['signIn_noUserFound'] % google_user.email())
+            return self.redirect('/sign_in')
+        self.session['user_id'] = user.key.id()
 
 
 
@@ -180,7 +204,6 @@ class SignOut(BaseHandler):
 
 @route('/admin/perform-migrations')
 class AdminMigration(BaseHandler):
-    @user_level(SUPER_ADMIN)
     def get(self):
         models.perform_migrations()
         self.redirect(url_for('home'))

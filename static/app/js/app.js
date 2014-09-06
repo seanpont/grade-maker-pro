@@ -2,27 +2,29 @@
 
 /* App Module */
 
-var phonecatApp = angular.module('graderApp', [
-  'ngRoute',
-  'graderAnimations',
+var graderApp = angular.module('graderApp', [
+    'ngRoute',
+    'graderAnimations',
 
-  'graderControllers',
-  'graderFilters',
-  'graderServices'
+    'graderControllers',
+    'graderFilters',
+    'graderServices'
 ]);
 
-phonecatApp.config(['$routeProvider',
-  function($routeProvider) {
-    $routeProvider.
-      when('/phones', {
-        templateUrl: 'partials/phone-list.html',
-        controller: 'PhoneListCtrl'
-      }).
-      when('/phones/:phoneId', {
-        templateUrl: 'partials/phone-detail.html',
-        controller: 'PhoneDetailCtrl'
-      }).
-      otherwise({
-        redirectTo: '/phones'
-      });
-  }]);
+graderApp.config(['$routeProvider',
+    function ($routeProvider) {
+        $routeProvider.
+            when('/sign-in', {
+                templateUrl: 'partials/sign-in.html',
+                controller: 'SignInCtrl'
+            }).
+            when('/hallway', {
+                templateUrl: 'partials/hallway.html',
+                controller: 'HallwayCtrl'
+            }).
+            otherwise({
+                redirectTo: '/sign-in'
+            });
+    }]);
+
+graderApp.value("Data", function() {return {}});

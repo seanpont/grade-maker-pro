@@ -31,6 +31,7 @@ file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), file_name)
 file_template = Template('''# CSRF- and Session keys
 
 CSRF_SECRET_KEY = '$csrf_key'
+TIMESTAMP_SIGNER_KEY = '$timestamp_key'
 SESSION_KEY = '$session_key'
 ''')
 
@@ -38,9 +39,9 @@ SESSION_KEY = '$session_key'
 # Get options from command line
 parser = OptionParser()
 parser.add_option("-f", "--force", dest="force",
-                  help="force overwrite of existing secret_keys file", action="store_true")
+                  help="force overwrite of existing secret_keys file", action="store_true", default=True)
 parser.add_option("-r", "--randomness", dest="randomness",
-                  help="length (randomness) of generated key; default = 24", default=24)
+                  help="length (randomness) of generated key; default = 32", default=32)
 (options, args) = parser.parse_args()
 
 
@@ -55,10 +56,10 @@ def write_file(contents):
         f.write(contents)
 
 
-def generate_keyfile(csrf_key, session_key):
+def generate_keyfile(csrf_key, session_key, timestamp_key):
     """Generate random keys for CSRF- and session key"""
     output = file_template.safe_substitute(dict(
-        csrf_key=csrf_key, session_key=session_key
+        csrf_key=csrf_key, session_key=session_key, timestamp_key=timestamp_key
     ))
     if os.path.exists(file_path):
         if options.force is None:
@@ -73,7 +74,8 @@ def main():
     r = options.randomness
     csrf_key = generate_randomkey(r)
     session_key = generate_randomkey(r)
-    generate_keyfile(csrf_key, session_key)
+    timestap_key = generate_randomkey(r)
+    generate_keyfile(csrf_key, session_key, timestap_key)
 
 
 if __name__ == "__main__":

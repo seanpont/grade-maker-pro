@@ -1,12 +1,12 @@
 'use strict';
 
-describe('service', function() {
+describe('service', function () {
 
   // load modules
-  beforeEach(module('phonecatApp'));
+    beforeEach(module('graderApp'));
 
-  // Test service availability
-  it('check the existence of Phone factory', inject(function(Phone) {
-      expect(Phone).toBeDefined();
+    // Test service availability
+    it('check the existence of User factory', inject(function (User) {
+        expect(User).toBeDefined();
     }));
 });

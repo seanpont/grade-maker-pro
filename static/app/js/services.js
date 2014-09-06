@@ -2,11 +2,15 @@
 
 /* Services */
 
-var graderServices = angular.module('phonecatServices', ['ngResource']);
+var graderServices = angular.module('graderServices', ['ngResource']);
 
-phonecatServices.factory('Phone', ['$resource',
-  function($resource){
-    return $resource('phones/:phoneId.json', {}, {
-      query: {method:'GET', params:{phoneId:'phones'}, isArray:true}
-    });
-  }]);
+graderServices.factory('User', ['$resource',
+    function ($resource) {
+        return $resource('/api/user');
+    }]);
+
+
+
+
+
+

@@ -44,6 +44,16 @@ class Teacher(ndb.Model):
     def check_password(self, password):
         return self.pw_hash and security.check_password_hash(self.pw_hash, password)
 
+    @classmethod
+    def get_by_email(cls, email):
+        return cls.query(cls.email == email).get()
+
+    @classmethod
+    def create(cls, name, email, password):
+        teacher = Teacher(name=name, email=email)
+        teacher.set_password(password)
+        return teacher.put()
+
 
 class Grade(ndb.Model):
     student = ndb.KeyProperty(kind=Student, required=True)

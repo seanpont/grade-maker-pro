@@ -4,7 +4,6 @@ import os
 from binascii import b2a_hex
 import logging
 from collections import Iterable
-import jinja2
 
 
 class ValidationError(Exception):
