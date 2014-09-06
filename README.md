@@ -1,5 +1,7 @@
-Casa de Angelese Website
+GradeMaker Pro
 ========================
+
+Grade like a pro!
 
 Dev Requirements:
 - Python 2.7
