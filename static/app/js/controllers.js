@@ -4,8 +4,22 @@
 
 var graderControllers = angular.module('graderControllers', []);
 
-graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', 'Data',
-    function ($scope, $http, $routeParams, Data) {
+
+graderControllers.controller('HomeCtrl', ['$scope', '$location', '$http', 'Data',
+    function($scope, $location, $http, Data) {
+        $http.get('/api/user').
+            success(function(data) {
+                Data.user = data;
+                $location.url('/hallway')
+            }).
+            error(function() {
+                $location.url('/sign-in')
+            });
+    }
+]);
+
+graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '$location', 'Data',
+    function ($scope, $http, $routeParams, $location, Data) {
 
         if ($routeParams.error) {
             $scope.error = $routeParams.error;
@@ -18,9 +32,8 @@ graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '
             }
             $http.post('/api/user', {email: $scope.email, password: $scope.password}).
                 success(function(data) {
-                    console.log("auth success!");
-                    console.log(data);
                     Data.user = data;
+                    $location.url('/hallway')
                 }).
                 error(function() {
                     $scope.error = "Email or password invalid";

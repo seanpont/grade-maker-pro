@@ -13,6 +13,10 @@ var graderApp = angular.module('graderApp', [
 graderApp.config(['$routeProvider',
     function ($routeProvider) {
         $routeProvider.
+            when('/', {
+                templateUrl: 'partials/home.html',
+                controller: 'HomeCtrl'
+            }).
             when('/sign-in', {
                 templateUrl: 'partials/sign-in.html',
                 controller: 'SignInCtrl'
@@ -26,4 +30,4 @@ graderApp.config(['$routeProvider',
             });
     }]);
 
-graderApp.value("Data", function() {return {}});
+graderApp.factory("Data", function() {return {}});

@@ -42,11 +42,12 @@ timestamper = TimestampSigner(TIMESTAMP_SIGNER_KEY)
 
 class BaseHandler(webapp2.RequestHandler):
 
+    # noinspection PyAttributeOutsideInit
     def initialize(self, request, response):
         super(BaseHandler, self).initialize(request, response)
         self.session = get_current_session()
         user_id = self.session.get('user_id')
-        self.user = user_id and models.Users.get_by_id(user_id)
+        self.user = user_id and models.Teacher.get_by_id(user_id)
 
     def write(self, d):
         json_txt = ")]}',\n" + json.dumps(d, default=datetime_handler)
@@ -60,7 +61,7 @@ class BaseHandler(webapp2.RequestHandler):
         return (self.request.get(arg) for arg in args)
 
     def data(self):
-        self.request.body  # if not called, body_file is empty
+        _ = self.request.body  # if not called, body_file is empty
         return json.load(self.request.body_file)
 
     def datum(self, *args):
@@ -69,33 +70,26 @@ class BaseHandler(webapp2.RequestHandler):
             return data.get(args[0])
         return [data.get(arg) for arg in args]
 
-    def check(self, condition, message):
+    def check(self, condition, message='', code=400):
         if not condition:
             logging.info(message)
-            self.abort(400, message)
-
-    def bad_news(self, message):
-        self.response.set_cookie('error', message)
-
-
-def send_mail(user, subject, body, **kwargs):
-    content = content_for_language(user.language)
-    sender = models.SiteConfig.get().mail_sender
-    subject = content[subject]
-    body = jinja2.Template(content[body]).render(user=user, **kwargs)
-    mail.send_mail(sender, user.email, subject, body)
+            self.abort(code, message)
 
 
 # ===== AUTHENTICATION ==========================================================================
 
 @route('/api/user')
 class UserHandler(BaseHandler):
+    def get(self):
+        self.check(self.user, 'user has not signed in', 404)
+        self.write(self.user)
+
     def post(self):
         self.check(not self.user, "user already signed in!")
         email, password = self.datum('email', 'password')
         self.check(email and password, "email and password required!")
         teacher = models.Teacher.get_by_email(email)
-        self.check(teacher and teacher.check_password(password), "Authentication failed: email or password invalid")
+        self.check(teacher and teacher.check_password(password), "Auth failed: email or password invalid", 401)
         self.session.put('user_id', teacher.key.id())
         self.write(teacher)
 
@@ -203,9 +197,8 @@ class SignOut(BaseHandler):
         self.redirect(url_for('home'))
 
 
-@route('/admin/perform-migrations')
+@route('/api/perform-migrations')
 class AdminMigration(BaseHandler):
     def get(self):
         models.perform_migrations()
-        self.redirect(url_for('home'))
-
+        self.redirect('/')

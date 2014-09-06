@@ -71,4 +71,5 @@ class Assignment(ndb.Model):
 
 
 def perform_migrations():
-    pass
+    if not Teacher.get_by_email('seanpont@gmail.com'):
+        Teacher.create("Sean Pont", 'seanpont@gmail.com', 'asdf1234')
