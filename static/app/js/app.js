@@ -4,11 +4,10 @@
 
 var graderApp = angular.module('graderApp', [
     'ngRoute',
-    'graderAnimations',
-
     'graderControllers',
-    'graderFilters',
-    'graderServices'
+    'graderServices',
+    'graderAnimations',
+    'graderFilters'
 ]);
 
 graderApp.config(['$routeProvider',

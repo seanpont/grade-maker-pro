@@ -1,7 +1,12 @@
 <div class="container">
     <h2>Welcome to GradeMaker Pro</h2>
     <p>Please enter your email address and password</p>
-    <input class="form-control inline" type="email" ng-model="email" placeholder="email address"/>
-    <input class="form-control inline" type="password" ng-model="password" placeholder="password"/>
-    <button class="btn btn-primary" ng-click="signIn()">Sign In</button>
+    <input class="form-control inline" ng-focus="clearError()" type="email" required="reqired" ng-model="email" placeholder="email address"/>
+    <input class="form-control inline" ng-focus="clearError()" type="password" required="required" ng-model="password" placeholder="password"/>
+    <button class="btn btn-primary" ng-focus="clearError()" ng-click="signIn()">Sign In</button>
+    <span class="error">{{ error }}</span>
+
+    <div style="height: 10px;"></div>
+    <a href="/api/user/google" class="btn btn-primary">Sign in with Google</a>
+
 </div>

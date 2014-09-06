@@ -28,10 +28,11 @@ describe('GraderApp controllers', function () {
             classrooms: [1, 2, 3]
         }
 
+        angular.module('graderControllers').factory('$cookies', function() { return {} });
+
         beforeEach(inject(function (_$httpBackend_, $rootScope, $controller, _Data_) {
             $httpBackend = _$httpBackend_;
             $httpBackend.expectPOST('/api/user', creds).respond(user);
-
             scope = $rootScope.$new();
             ctrl = $controller('SignInCtrl', {$scope: scope});
             Data = _Data_;

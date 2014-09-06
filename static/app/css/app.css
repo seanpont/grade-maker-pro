@@ -8,3 +8,7 @@ button.btn {
     margin-top: -2px;
 }
 
+span.error {
+    margin-left: 10px;
+    color: red;
+}

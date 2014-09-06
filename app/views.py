@@ -60,19 +60,22 @@ class BaseHandler(webapp2.RequestHandler):
         return (self.request.get(arg) for arg in args)
 
     def data(self):
-        logging.info('data: %s' % self.request.body)
-        logging.info(dir(self.request))
+        self.request.body  # if not called, body_file is empty
         return json.load(self.request.body_file)
 
-    def datums(self, *args):
+    def datum(self, *args):
+        data = self.data()
         if len(args) == 1:
-            return self.data().get(args[0])
-        return [self.data().get(arg) for arg in args]
+            return data.get(args[0])
+        return [data.get(arg) for arg in args]
 
     def check(self, condition, message):
         if not condition:
             logging.info(message)
-            self.abort(401, message)
+            self.abort(400, message)
+
+    def bad_news(self, message):
+        self.response.set_cookie('error', message)
 
 
 def send_mail(user, subject, body, **kwargs):
@@ -87,10 +90,9 @@ def send_mail(user, subject, body, **kwargs):
 
 @route('/api/user')
 class UserHandler(BaseHandler):
-
     def post(self):
         self.check(not self.user, "user already signed in!")
-        email, password = self.datums('email', 'password')
+        email, password = self.datum('email', 'password')
         self.check(email and password, "email and password required!")
         teacher = models.Teacher.get_by_email(email)
         self.check(teacher and teacher.check_password(password), "Authentication failed: email or password invalid")
@@ -98,21 +100,20 @@ class UserHandler(BaseHandler):
         self.write(teacher)
 
 
-
-@route('/sign-in/google')
+@route('/api/user/google')
 class GoogleSignIn(BaseHandler):
     def get(self):
-        if self.user:
-            self.abort(401, "User is already signed in")
+        self.check(not self.user, "User has already signed in")
         google_user = google_users.get_current_user()
         if not google_user:
             return self.redirect(google_users.create_login_url(self.request.url))
-        user = models.Users.find_by_email(google_user.email())
-        if not user:
-            self.bad_news(content_for_language(self.language)['signIn_noUserFound'] % google_user.email())
-            return self.redirect('/sign_in')
-        self.session['user_id'] = user.key.id()
-
+        user = models.Teacher.get_by_email(google_user.email())
+        if user:
+            self.session['user_id'] = user.key.id()
+        else:
+            self.bad_news("No user found for %s" % google_user.email())
+            return self.redirect('/#sign-in?error=no+user+found+for+' + google_user.email())
+        self.redirect('/')
 
 
 @route('/api/blobstore/(.*)')
