@@ -13,7 +13,7 @@ var graderApp = angular.module('graderApp', [
 graderApp.config(['$routeProvider',
     function ($routeProvider) {
         $routeProvider.
-            when('/', {
+            when('/home', {
                 templateUrl: 'partials/home.html',
                 controller: 'HomeCtrl'
             }).
@@ -26,7 +26,7 @@ graderApp.config(['$routeProvider',
                 controller: 'HallwayCtrl'
             }).
             otherwise({
-                redirectTo: '/sign-in'
+                redirectTo: '/home'
             });
     }]);
 

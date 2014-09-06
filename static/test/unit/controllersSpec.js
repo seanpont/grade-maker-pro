@@ -29,10 +29,10 @@ describe('GraderApp controllers', function () {
 
     beforeEach(inject(function (_$httpBackend_, $rootScope, _$location_, _$controller_, _Data_) {
         $httpBackend = _$httpBackend_;
-        scope = $rootScope.$new();
-        Data = _Data_;
         $location = _$location_;
         $controller = _$controller_;
+        scope = $rootScope.$new();
+        Data = _Data_;
     }));
 
     // ===== HOME =======================================================
@@ -70,7 +70,7 @@ describe('GraderApp controllers', function () {
     describe('SignInCtrl', function () {
 
         beforeEach(function () {
-            $httpBackend.expectPOST('/api/user', creds).respond(user);
+            $httpBackend.expectPOST('/api/auth', creds).respond(user);
             ctrl = $controller('SignInCtrl', {$scope: scope});
         });
 

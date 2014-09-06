@@ -29,7 +29,6 @@ from lib.gaesessions import get_current_session
 from lib.itsdangerous import TimestampSigner, BadData
 from lib.secret_keys import TIMESTAMP_SIGNER_KEY
 from lib.router import route, url_for
-from lib.formalin import *
 
 import models
 from utils import *
@@ -78,12 +77,8 @@ class BaseHandler(webapp2.RequestHandler):
 
 # ===== AUTHENTICATION ==========================================================================
 
-@route('/api/user')
-class UserHandler(BaseHandler):
-    def get(self):
-        self.check(self.user, 'user has not signed in', 404)
-        self.write(self.user)
-
+@route('/api/auth')
+class AuthHandler(BaseHandler):
     def post(self):
         self.check(not self.user, "user already signed in!")
         email, password = self.datum('email', 'password')
@@ -94,7 +89,7 @@ class UserHandler(BaseHandler):
         self.write(teacher)
 
 
-@route('/api/user/google')
+@route('/api/auth/google')
 class GoogleSignIn(BaseHandler):
     def get(self):
         self.check(not self.user, "User has already signed in")
@@ -105,9 +100,15 @@ class GoogleSignIn(BaseHandler):
         if user:
             self.session['user_id'] = user.key.id()
         else:
-            self.bad_news("No user found for %s" % google_user.email())
             return self.redirect('/#sign-in?error=no+user+found+for+' + google_user.email())
         self.redirect('/')
+
+
+@route('/api/user')
+class UserHandler(BaseHandler):
+    def get(self):
+        self.check(self.user, 'user has not signed in', 404)
+        self.write(self.user)
 
 
 @route('/api/blobstore/(.*)')
@@ -119,47 +120,6 @@ class Blobstore(BlobstoreDownloadHandler):
 
 
 # ===== AUTHENTICATION ========================================================
-
-
-@route('/sign_in')
-class SignIn(BaseHandler):
-    def get(self):
-        if self.user:
-            return self.redirect(url_for('home'))
-        self.render_html('sign_in.html',
-                         email=self.session.pop('email'))
-
-    class Form(FormValidator):
-        email = is_required, is_email
-        password = is_required
-
-    def post(self):
-        form = SignIn.Form(self).validate()
-        logging.info('form: %s', form)
-        user = models.Users.find_by_email(form.email)
-        if user and user.check_password(form.password):
-            self.session['user_id'] = user.key.id()
-            return self.redirect('/account')
-        else:
-            self.bad_news(content_for_language(self.language)['signIn_badNews'])
-            self.session['email'] = form.email
-            self.redirect(self.request.path)
-
-
-@route('/google_sign_in')
-class GoogleSignIn(BaseHandler):
-    def get(self):
-        if self.user:
-            return self.redirect(url_for('home'))
-        google_user = google_users.get_current_user()
-        if not google_user:
-            return self.redirect(google_users.create_login_url(self.request.url))
-        user = models.Users.find_by_email(google_user.email())
-        if not user:
-            self.bad_news(content_for_language(self.language)['signIn_noUserFound'] % google_user.email())
-            return self.redirect('/sign_in')
-        self.session['user_id'] = user.key.id()
-        self.redirect('/')
 
 
 @route('/forgot_password')

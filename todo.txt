@@ -10,8 +10,8 @@ Sign In
 API
 
 User
-    /api/user
-        returns current user (teacher)
+/api/user
+    returns current user (teacher)
 
 
 

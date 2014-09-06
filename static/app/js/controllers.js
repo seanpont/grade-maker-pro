@@ -21,16 +21,14 @@ graderControllers.controller('HomeCtrl', ['$scope', '$location', '$http', 'Data'
 graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '$location', 'Data',
     function ($scope, $http, $routeParams, $location, Data) {
 
-        if ($routeParams.error) {
-            $scope.error = $routeParams.error;
-        }
+        $scope.error = $routeParams.error || '';
 
         $scope.signIn = function() {
             if (!$scope.email || !$scope.password) {
                 $scope.error = 'Email and password required';
                 return;
             }
-            $http.post('/api/user', {email: $scope.email, password: $scope.password}).
+            $http.post('/api/auth', {email: $scope.email, password: $scope.password}).
                 success(function(data) {
                     Data.user = data;
                     $location.url('/hallway')
@@ -38,7 +36,7 @@ graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '
                 error(function() {
                     $scope.error = "Email or password invalid";
                 });
-        }
+        };
 
         $scope.clearError = function() {
             $scope.error = null;
