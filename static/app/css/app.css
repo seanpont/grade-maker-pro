@@ -4,10 +4,6 @@ input.form-control.inline {
     width: 200px;
 }
 
-button.btn {
-    margin-top: -2px;
-}
-
 .error {
     color: red;
 }

@@ -43,3 +43,4 @@ node_modules/
 tmp
 .DS_Store
 bower_components/
+scripts/

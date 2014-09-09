@@ -41,6 +41,7 @@ timestamper = TimestampSigner(TIMESTAMP_SIGNER_KEY)
 
 
 class BaseHandler(webapp2.RequestHandler):
+
     # noinspection PyAttributeOutsideInit
     def initialize(self, request, response):
         super(BaseHandler, self).initialize(request, response)
@@ -105,24 +106,31 @@ class AuthHandler(BaseHandler):
 
     def post(self):
         self.check(not self.user, "user already signed in!")
-        email = self.datum('email')
+        name, email = self.datum('name', 'email')
         self.check(email, "email required!")
-        teacher = models.Teacher.get_by_email(email)
-        self.check(teacher, "Auth failed: no user found", 404)
-        token = timestamper.sign(str(teacher.key.id()))
-        send_welcome_email(teacher.name, email, self.request.url, token)
+        user = models.Teacher.get_by_email(email)
+        if user:
+            name = user.name
+            user_key = user.key
+        else:
+            self.check(name, 'name required')
+            user_key = models.Teacher.create(name, email)
+        token = timestamper.sign(str(user_key.id()))
+        send_welcome_email(name, email, self.request.url, token)
         self.response.set_cookie('verify', 'true')
 
     def get(self):
         self.verify(self.params('token'))
         self.redirect('/')
 
+    # noinspection PyAttributeOutsideInit
     def verify(self, token):
         self.check(not self.user, 'User is already signed in.')
         self.check(token, "auth token required")
         try:
             user_id = int(timestamper.unsign(token, max_age=60*30))
-            self.check(models.Teacher.get_by_id(user_id))
+            self.user = models.Teacher.get_by_id(user_id)
+            self.check(self.user)
             self.session['user_id'] = user_id
             self.response.delete_cookie('verify')
         except BadData:
@@ -133,6 +141,7 @@ class AuthHandler(BaseHandler):
 class VerifyHandler(AuthHandler):
     def post(self):
         self.verify(self.datum('token'))
+        self.write(self.user)
 
 
 @route('/api/auth/google')
@@ -156,19 +165,6 @@ class UserHandler(BaseHandler):
         self.check(self.user, 'user has not signed in', 404)
         self.write(self.user)
 
-    def post(self):
-        if self.user:
-            logging.info("TODO: update teacher info")
-        else:
-            name, email = self.datum('name', 'email')
-            self.check(name and email, "name and email required")
-            user = models.Teacher.get_by_email(email)
-            self.check(not user, "User already exists with that email address", 401)
-            user_key = models.Teacher.create(name, email)
-            token = timestamper.sign(str(user_key.id()))
-            link = self.request.url.replace('user', 'auth') + 'auth?token=' + token
-            send_welcome_email(name, email, link)
-
 
 @route('/api/blobstore/(.*)')
 class Blobstore(BlobstoreDownloadHandler):
@@ -178,42 +174,13 @@ class Blobstore(BlobstoreDownloadHandler):
         self.send_blob(blob_info)
 
 
-# ===== AUTHENTICATION ========================================================
-
-
-@route('/forgot_password')
-class ForgotPassword(BaseHandler):
-    def get(self):
-        if self.user:
-            return self.redirect(url_for('account'))
-        token = self.params('token')
-        try:
-            user_id = int(timestamper.unsign(token, 24 * 60 * 60))  # Link is valid for one day
-        except BadData:
-            self.bad_news("That link has expired")
-            return self.redirect(url_for('sign_in'))
-        user = models.Users.get_by_id(user_id) or self.abort(401)
-        self.session.clear()
-        self.session['user_id'] = user.key.id()
-        self.redirect(url_for('account'))
-
-    def post(self):
-        """Send reset password link"""
-        if self.user:
-            return self.redirect(url_for('home'))
-        email = self.params('email')
-        user = models.Users.find_by_email(email) or self.abort(404)
-        signed_user_id = timestamper.sign(str(user.key.id()))
-        link = self.request.url + '?token=%s' % signed_user_id
-        logging.info('forgot password link: %s', link)
-        send_mail(user, 'forgotPassword_email_subject', 'forgotPassword_email_body', link=link)
-
-
-@route('/sign_out')
+@route('/api/sign-out')
 class SignOut(BaseHandler):
     def post(self):
         self.session.terminate()
-        self.redirect(url_for('home'))
+
+
+# ===== ADMIN ========================================================
 
 
 @route('/api/perform-migrations')

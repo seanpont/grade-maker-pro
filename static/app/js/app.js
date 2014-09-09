@@ -3,7 +3,7 @@
 /* App Module */
 
 var graderApp = angular.module('graderApp', [
-  'ngRoute', 'ngCookies', 'graderControllers', 'graderServices'
+  'ngRoute', 'ngCookies', 'graderControllers', 'graderServices', 'graderAnimations'
 ]);
 
 graderApp.config(['$routeProvider',

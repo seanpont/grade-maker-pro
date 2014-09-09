@@ -6,6 +6,9 @@ threadsafe: true
 
 default_expiration: "5d"
 
+skip_files:
+- static/node_modules/.*
+
 builtins:
 - appstats: on
 - admin_redirect: on
