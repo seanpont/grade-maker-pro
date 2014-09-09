@@ -8,7 +8,32 @@ button.btn {
     margin-top: -2px;
 }
 
-span.error {
-    margin-left: 10px;
+.error {
     color: red;
+}
+
+.success {
+    color: #008000;
+}
+
+div.centered {
+    margin: 0 auto;
+    width: 500px;
+    text-align: center;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.half-width {
+    width: 48%;
+}
+
+div.spacer {
+    height: 10px;
 }

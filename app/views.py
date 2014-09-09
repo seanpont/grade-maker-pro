@@ -12,6 +12,7 @@ For example the *say_hello* handler, handling the URL route '/hello/<username>',
 import datetime
 import json
 import urllib
+from string import Template
 from functools import wraps
 from collections import defaultdict
 
@@ -40,7 +41,6 @@ timestamper = TimestampSigner(TIMESTAMP_SIGNER_KEY)
 
 
 class BaseHandler(webapp2.RequestHandler):
-
     # noinspection PyAttributeOutsideInit
     def initialize(self, request, response):
         super(BaseHandler, self).initialize(request, response)
@@ -77,16 +77,45 @@ class BaseHandler(webapp2.RequestHandler):
 
 # ===== AUTHENTICATION ==========================================================================
 
+
+def send_welcome_email(name, email, link):
+    mail.send_mail(
+        sender="GradeMakerPro Support <seanpont@gmail.com>",
+        to=Template("${name} <${email}>").substitute(name=name, email=email),
+        subject="Your account has been approved",
+        body=Template("""
+${name},
+
+Click the link below to sign in to your account. This link is valid for 30 minutes.
+
+${link}
+
+Thanks,
+The GradeMaker Pro Team
+""").substitute(name=name, email=email, link=link))
+
+
 @route('/api/auth')
 class AuthHandler(BaseHandler):
+    def get(self):
+        self.check(not self.user, "User is already signed in!")
+        auth_token = self.params('token')
+        try:
+            user_id = int(timestamper.unsign(auth_token, max_age=60*30))
+            self.check(models.Teacher.get_by_id(user_id))
+            self.session['user_id'] = user_id
+            self.redirect('/')
+        except BadData:
+            self.abort(401)
+
     def post(self):
         self.check(not self.user, "user already signed in!")
-        email, password = self.datum('email', 'password')
-        self.check(email and password, "email and password required!")
+        email = self.datum('email')
+        self.check(email, "email required!")
         teacher = models.Teacher.get_by_email(email)
-        self.check(teacher and teacher.check_password(password), "Auth failed: email or password invalid", 401)
-        self.session.put('user_id', teacher.key.id())
-        self.write(teacher)
+        self.check(teacher, "Auth failed: no user found", 404)
+        link = self.request.url + '?token=' + timestamper.sign(str(teacher.key.id()))
+        send_welcome_email(teacher.name, email, link)
 
 
 @route('/api/auth/google')
@@ -109,6 +138,19 @@ class UserHandler(BaseHandler):
     def get(self):
         self.check(self.user, 'user has not signed in', 404)
         self.write(self.user)
+
+    def post(self):
+        if self.user:
+            logging.info("TODO: update teacher info")
+        else:
+            name, email = self.datum('name', 'email')
+            self.check(name and email, "name and email required")
+            user = models.Teacher.get_by_email(email)
+            self.check(not user, "User already exists with that email address", 401)
+            user_key = models.Teacher.create(name, email)
+            token = timestamper.sign(str(user_key.id()))
+            link = self.request.url.replace('user', 'auth') + 'auth?token=' + token
+            send_welcome_email(name, email, link)
 
 
 @route('/api/blobstore/(.*)')
@@ -162,3 +204,5 @@ class AdminMigration(BaseHandler):
     def get(self):
         models.perform_migrations()
         self.redirect('/')
+
+
