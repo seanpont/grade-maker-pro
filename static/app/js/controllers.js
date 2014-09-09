@@ -8,14 +8,13 @@ var graderControllers = angular.module('graderControllers', [
 
 graderControllers.controller('HomeCtrl', function() {});
 
-graderControllers.controller('SignInCtrl', ['$scope', '$http', '$modal', '$routeParams',
-  function ($scope, $http, $modal, $routeParams) {
+graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '$location',
+  function ($scope, $http, $routeParams, $location) {
 
     $scope.signingIn = false;
     $scope.error = $routeParams.error || '';
 
     $scope.signIn = function () {
-      console.log('signIn')
       if (!$scope.email) {
         $scope.error = 'Email required';
         return;
@@ -49,9 +48,23 @@ graderControllers.controller('SignInCtrl', ['$scope', '$http', '$modal', '$route
   }
 ]);
 
-graderControllers.controller('SignInCtrl', ['$scope', '$http', '$modal', '$routeParams',
-  function ($scope, $http, $modal, $routeParams) {
-
+graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', 'Data',
+  function ($scope, $http, $location, Data) {
+    $scope.verify = function() {
+      if (!$scope.token) {
+        $scope.error = "Verification code required";
+        return;
+      }
+      $http.post('/api/auth/verify', {token: $scope.token}).
+        success(function(data) {
+          console.log(data);
+          Data.user = data;
+          $location.url('/hallway');
+        }).
+        error(function() {
+          $scope.error = 'Verification code invalid or expired';
+        });
+    };
   }
 ]);
 

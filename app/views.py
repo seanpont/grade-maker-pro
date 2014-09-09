@@ -78,7 +78,7 @@ class BaseHandler(webapp2.RequestHandler):
 # ===== AUTHENTICATION ==========================================================================
 
 
-def send_welcome_email(name, email, link):
+def send_welcome_email(name, email, url, token):
     mail.send_mail(
         sender="GradeMakerPro Support <seanpont@gmail.com>",
         to=Template("${name} <${email}>").substitute(name=name, email=email),
@@ -86,27 +86,22 @@ def send_welcome_email(name, email, link):
         body=Template("""
 ${name},
 
-Click the link below to sign in to your account. This link is valid for 30 minutes.
+Welcome to GradeMaker Pro! Here is your verification code:
 
-${link}
+${token}
+
+Alternatively, you may click the link below to sign in to your account.
+This link is valid for 30 minutes.
+
+${url}?token=${token}
 
 Thanks,
 The GradeMaker Pro Team
-""").substitute(name=name, email=email, link=link))
+""").substitute(name=name, email=email, url=url, token=token))
 
 
 @route('/api/auth')
 class AuthHandler(BaseHandler):
-    def get(self):
-        self.check(not self.user, "User is already signed in!")
-        auth_token = self.params('token')
-        try:
-            user_id = int(timestamper.unsign(auth_token, max_age=60*30))
-            self.check(models.Teacher.get_by_id(user_id))
-            self.session['user_id'] = user_id
-            self.redirect('/')
-        except BadData:
-            self.abort(401)
 
     def post(self):
         self.check(not self.user, "user already signed in!")
@@ -114,8 +109,30 @@ class AuthHandler(BaseHandler):
         self.check(email, "email required!")
         teacher = models.Teacher.get_by_email(email)
         self.check(teacher, "Auth failed: no user found", 404)
-        link = self.request.url + '?token=' + timestamper.sign(str(teacher.key.id()))
-        send_welcome_email(teacher.name, email, link)
+        token = timestamper.sign(str(teacher.key.id()))
+        send_welcome_email(teacher.name, email, self.request.url, token)
+        self.response.set_cookie('verify', 'true')
+
+    def get(self):
+        self.verify(self.params('token'))
+        self.redirect('/')
+
+    def verify(self, token):
+        self.check(not self.user, 'User is already signed in.')
+        self.check(token, "auth token required")
+        try:
+            user_id = int(timestamper.unsign(token, max_age=60*30))
+            self.check(models.Teacher.get_by_id(user_id))
+            self.session['user_id'] = user_id
+            self.response.delete_cookie('verify')
+        except BadData:
+            self.abort(401)
+
+
+@route('/api/auth/verify')
+class VerifyHandler(AuthHandler):
+    def post(self):
+        self.verify(self.datum('token'))
 
 
 @route('/api/auth/google')

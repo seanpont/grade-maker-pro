@@ -3,7 +3,7 @@
 /* App Module */
 
 var graderApp = angular.module('graderApp', [
-  'ngRoute', 'graderControllers', 'graderServices'
+  'ngRoute', 'ngCookies', 'graderControllers', 'graderServices'
 ]);
 
 graderApp.config(['$routeProvider',
@@ -31,16 +31,18 @@ graderApp.config(['$routeProvider',
   }
 ]);
 
-graderApp.run(['$http', '$location', 'Data', function ($http, $location, Data) {
-  console.log("fetching user info")
-  $http.get('/api/user').
-    success(function (data) {
-      console.log('User is authenticated')
-      Data.user = data;
-      $location.url('/hallway')
-    }).
-    error(function () {
-      console.log('user must sign in')
-      $location.url('/sign-in')
-    });
+graderApp.run(['$http', '$location', '$cookies', 'Data', function ($http, $location, $cookies, Data) {
+  if ($cookies.verify) {
+    console.log($cookies.verify)
+    $location.url('/verify')
+  } else {
+    $http.get('/api/user').
+      success(function (data) {
+        Data.user = data;
+        $location.url('/hallway')
+      }).
+      error(function () {
+        $location.url('/sign-in')
+      });
+  }
 }]);

@@ -35,30 +35,43 @@ describe('GraderApp controllers', function () {
 
   describe('SignInCtrl', function () {
 
-    beforeEach(function () {
+    it('should verify the user in when provided email', function () {
       $httpBackend.expectPOST('/api/auth', { email: 'seanpont@gmail.com'}).respond({});
       ctrl = $controller('SignInCtrl', {$scope: scope});
-    });
-
-    it('should sign the user in when provided email and password', function () {
       scope.signIn();
       expect(scope.error).toBeDefined();
       scope.email = user.email;
       scope.signIn();
       $httpBackend.flush();
-      expect(location.)
-    });
-  });
-
-  describe('SignInCtrl', function() {
-    beforeEach(function() {
-      $httpBackend.expectPOST('/api/user', {email: user.email, name: user.name}).respond({});
-      ctrl = $controller('SignInCtrl', {$scope: scope});
+      expect($location.path()).toBe('/verify')
     });
 
     it('creates a user when commanded thusly', function() {
-      // TODO: implement test
+      $httpBackend.expectPOST('/api/user', {email: user.email, name: user.name}).respond({});
+      ctrl = $controller('SignInCtrl', {$scope: scope});
+      scope.email = user.email;
+      scope.createUser();
+      expect(scope.error).toBeDefined();
+      scope.name = user.name;
+      scope.createUser();
+      $httpBackend.flush();
+      expect($location.path()).toBe('/verify');
     });
-  })
+  });
+
+  describe('VerifyCtrl', function() {
+
+    it('should verify the code', function() {
+      $httpBackend.expectPOST('/api/auth/verify', {code: 123456}).respond(user);
+      ctrl = $controller('VerifyCtrl', {$scope: scope});
+      scope.verify();
+      expect(scope.error).toBeDefined();
+      scope.code = 123456;
+      scope.verify();
+      $httpBackend.flush();
+      expect(Data.user).toEqualData(user);
+      expect($location.path()).toBe('/hallway');
+    });
+  });
 
 });
