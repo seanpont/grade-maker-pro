@@ -4,8 +4,6 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
-default_expiration: "5d"
-
 skip_files:
 - static/node_modules/.*
 
@@ -24,19 +22,24 @@ handlers:
 
 - url: /api/.*
   script: main.app
+  secure: always
 
 - url: /
   static_files: static/app/index.html
   upload: static/app/index.html
+  secure: always
 
 - url: /
   static_dir: static/app/
+  secure: always
 
 - url: /favicon.ico
   static_files: /static/app/img/favicon.ico
   upload: static/app/img/favicon.ico
+  secure: always
 
 - url: /robots.txt
   static_files: /robots.txt
   upload: static/robots.txt
+  secure: always
 

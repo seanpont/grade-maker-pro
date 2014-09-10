@@ -9,6 +9,15 @@ import logging
 from google.appengine.ext import ndb
 
 
+def to_dict(model):
+    assert isinstance(model, ndb.Model)
+    d = {}
+    for field in model._values.keys():
+        d[field] = getattr(model, field)
+    d['id'] = model.key.id()
+    return d
+
+
 class Student(ndb.Model):
     name = ndb.StringProperty(required=True)
     email = ndb.StringProperty(required=True)

@@ -49,8 +49,8 @@ graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '
   }
 ]);
 
-graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', 'Data',
-  function ($scope, $http, $location, Data) {
+graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$cookies', 'Data',
+  function ($scope, $http, $location, $cookies, Data) {
     $scope.verify = function() {
       if (!$scope.token) {
         $scope.error = "Verification code required";
@@ -65,6 +65,11 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', 'Dat
           $scope.error = 'Verification code invalid or expired';
         });
     };
+
+    $scope.signIn = function() {
+      delete $cookies.verify;
+      $location.url('/sign-in')
+    }
   }
 ]);
 

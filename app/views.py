@@ -29,7 +29,7 @@ from google.appengine.ext.webapp.blobstore_handlers import BlobstoreUploadHandle
 from lib.gaesessions import get_current_session
 from lib.itsdangerous import TimestampSigner, BadData
 from lib.secret_keys import TIMESTAMP_SIGNER_KEY
-from lib.router import route, url_for
+from lib.router import route
 
 import models
 from utils import *
@@ -49,10 +49,12 @@ class BaseHandler(webapp2.RequestHandler):
         user_id = self.session.get('user_id')
         self.user = user_id and models.Teacher.get_by_id(user_id)
 
-    def write(self, d):
-        json_txt = ")]}',\n" + json.dumps(d, default=datetime_handler)
+    def write(self, data):
+        if isinstance(data, ndb.Model):
+            data = models.to_dict(data)
+        json_txt = ")]}',\n" + json.dumps(data, default=datetime_handler)
         self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        self.write(json_txt)
+        self.response.write(json_txt)
 
     def params(self, *args):
         """get request parameter(s)"""
@@ -127,12 +129,15 @@ class AuthHandler(BaseHandler):
     def verify(self, token):
         self.check(not self.user, 'User is already signed in.')
         self.check(token, "auth token required")
+        logging.info("verify: checks complete")
         try:
             user_id = int(timestamper.unsign(token, max_age=60*30))
             self.user = models.Teacher.get_by_id(user_id)
+            logging.info("User retrieved")
             self.check(self.user)
             self.session['user_id'] = user_id
-            self.response.delete_cookie('verify')
+            logging.info("cookie set")
+            # self.response.delete_cookie('verify')
         except BadData:
             self.abort(401)
 
@@ -140,8 +145,11 @@ class AuthHandler(BaseHandler):
 @route('/api/auth/verify')
 class VerifyHandler(AuthHandler):
     def post(self):
+        logging.info("VerifyHandler")
         self.verify(self.datum('token'))
+        logging.info("Verification complete")
         self.write(self.user)
+        logging.info("data written")
 
 
 @route('/api/auth/google')

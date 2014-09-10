@@ -32,17 +32,16 @@ graderApp.config(['$routeProvider',
 ]);
 
 graderApp.run(['$http', '$location', '$cookies', 'Data', function ($http, $location, $cookies, Data) {
-  if ($cookies.verify) {
-    console.log($cookies.verify)
-    $location.url('/verify')
-  } else {
-    $http.get('/api/user').
-      success(function (data) {
-        Data.user = data;
-        $location.url('/hallway')
-      }).
-      error(function () {
+  $http.get('/api/user').
+    success(function (data) {
+      Data.user = data;
+      $location.url('/hallway')
+    }).
+    error(function () {
+      if ($cookies.verify) {
+        $location.url('/verify')
+      } else {
         $location.url('/sign-in')
-      });
-  }
+      }
+    });
 }]);
