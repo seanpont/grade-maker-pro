@@ -50,6 +50,14 @@ class UnitTest(unittest.TestCase):
     def post(self, path, body):
         return self.app.post(path, json.dumps(body))
 
+    def parse_json(self, response):
+        return json.loads(response.body[5:])
+
+    def post_for_json(self, path, body):
+        response = self.post(path, body)
+        self.assertEqual(response.status_int, 200)
+        return self.parse_json(response)
+
     def test_auth_handler(self):
         response = self.post('/api/auth', {'name': 'Sean', 'email': 'seanpont@gmail.com'})
         self.assertEqual(response.status_int, 200)
@@ -61,8 +69,8 @@ class UnitTest(unittest.TestCase):
         self.post('/api/auth', {'name': 'Sean', 'email': 'seanpont@gmail.com'})
         user = models.Teacher.get_by_email('seanpont@gmail.com')
         token = views.timestamper.sign(str(user.key.id()))
-        response = self.post('/api/auth/verify', {'token': token})
-        self.assertEqual(response.status_int, 200)
+        user = self.post_for_json('/api/auth/verify', {'token': token})
+        self.assertEqual(user['email'], 'seanpont@gmail.com')
 
 
 
