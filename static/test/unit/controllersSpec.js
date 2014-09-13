@@ -79,5 +79,21 @@ describe('GraderApp controllers', function () {
 
   // ===== SchoolCtrl ======================================================================
 
+  describe('SchoolCtrl', function() {
+
+    it('should show classes', function() {
+      scope.user = user;
+      ctrl = $controller('SchoolCtrl', {$scope: scope});
+      scope.showClasses();
+
+
+
+
+    });
+
+
+
+  })
+
 
 });

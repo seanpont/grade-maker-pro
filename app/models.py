@@ -39,7 +39,7 @@ class ClassroomAccess(ndb.Model):
 class Teacher(ndb.Model):
     name = ndb.StringProperty(required=True)
     email = ndb.StringProperty(required=True)
-    classrooms = ndb.StructuredProperty(ClassroomAccess, repeated=True)
+    classroomAccess = ndb.StructuredProperty(ClassroomAccess, repeated=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
@@ -50,6 +50,9 @@ class Teacher(ndb.Model):
     @classmethod
     def create(cls, name, email):
         return Teacher(name=name, email=email).put()
+
+    def get_classrooms(self):
+        return ndb.get_multi([access.classroom for access in self.classroomAccess])
 
 
 class Grade(ndb.Model):

@@ -78,8 +78,14 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 ]);
 
 
-graderControllers.controller('SchoolCtrl', ['$scope', 'Data',
-  function ($scope, Data) {
+graderControllers.controller('SchoolCtrl', ['$scope', 'Class',
+  function ($scope, Class) {
+    $scope.show = {classes: false};
+    $scope.classes = [];
+    $scope.showClasses = function() {
+      $scope.classes = Class.query();
+      $scope.show.classes = true;
+    }
 
   }
 ]);

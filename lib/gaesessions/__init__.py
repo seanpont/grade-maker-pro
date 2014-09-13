@@ -35,10 +35,7 @@ _tls = threading.local()
 
 def get_current_session():
     """Returns the session associated with the current request."""
-    try:
-        return _tls.current_session
-    except AttributeError:
-        return {}  # For testing
+    return _tls.current_session
 
 
 def set_current_session(session):

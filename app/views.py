@@ -183,6 +183,14 @@ class SignOut(BaseHandler):
     def post(self):
         self.session.terminate()
 
+# ===== CLASSES ===============================================================
+
+@route('/api/classroom')
+class ClassHandler(BaseHandler):
+    def get(self):
+        self.check(self.user, code=401)
+        self.write(self.user.get_classrooms())
+
 
 # ===== ADMIN ========================================================
 

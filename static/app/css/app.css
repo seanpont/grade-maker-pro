@@ -49,15 +49,26 @@ div.spacer {
     font-weight: bold;
 }
 
-.school-options > li {
+.navigation input {
+    display: inline-block;
+    width: 300px;
+    margin-left: 20px;
+}
+
+.items {
+    margin-top: 15px;
+}
+
+.items > li {
     border: 1px solid #999;
     -webkit-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
     -moz-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
     box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
-    display: table;
+    display: inline-block;
     height: 100%;
     padding: 10px;
     position: relative;
     text-transform: uppercase;
-    width: 100%;
+    cursor: pointer;
+    margin-right: 5px;
 }

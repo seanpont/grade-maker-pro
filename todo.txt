@@ -1,22 +1,63 @@
 
-Sign In
-    get user info
-    if none, present sign in page
-    email, password, or google sign-in
+
+search by:
+    student
+    assignment name
+    assignment date
+
+assignment name | assignment date | student1 | student2 | student 3
+   assignment1       9/29/2014          94        84         79
+   assignment2       9/30/2014          98        89         81
+   assignment3       10/3/2014          97        84         87
 
 
 
+school:
+    classes:
+        show classes:
+            show class:
+                name
+                students
+                faculty
+                assignments
+                edit name
+                add / remove faculty
+                create / add / remove students
+                create / update / remove assignments
+                create / update / remove grades
+                delete class
+        create class:
+            name
+    students:
+        show students:
+            show student:
+                name
+                email
+                assignments
+                grades
+            edit student:
+                name
+                email
+            add / remove classes
+            crud assignment
+            crud grades
+        add student:
+            name
+    assignments:
+        show assignments:
+            show assignment:
+                name
+                class
+                students
+                grades
+    faculty:
+        show faculty
+            show faculty member:
+                name
+                email
+                classes
+                add to class
+                remove from class
 
-API
-
-User
-/api/user
-    returns current user (teacher)
 
 
-
-
-TODO
-
-google sign in
-    problem encountered: how to handle redirect with single-page app
