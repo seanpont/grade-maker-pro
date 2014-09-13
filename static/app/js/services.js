@@ -9,10 +9,5 @@ graderServices.factory('User', ['$resource',
         return $resource('/api/user');
     }]);
 
-graderServices.factory("Data", function () {
-  return {}
-});
-
-
 
 

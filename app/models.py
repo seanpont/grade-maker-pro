@@ -5,7 +5,6 @@ App Engine datastore models
 
 """
 
-import logging
 from google.appengine.ext import ndb
 
 

@@ -21,9 +21,9 @@ graderApp.config(['$routeProvider',
         templateUrl: 'partials/verify.html',
         controller: 'VerifyCtrl'
       }).
-      when('/hallway', {
-        templateUrl: 'partials/hallway.html',
-        controller: 'HallwayCtrl'
+      when('/school', {
+        templateUrl: 'partials/school.html',
+        controller: 'SchoolCtrl'
       }).
       otherwise({
         redirectTo: '/home'
@@ -31,17 +31,18 @@ graderApp.config(['$routeProvider',
   }
 ]);
 
-graderApp.run(['$http', '$location', '$cookies', 'Data', function ($http, $location, $cookies, Data) {
-  $http.get('/api/user').
-    success(function (data) {
-      Data.user = data;
-      $location.url('/hallway')
-    }).
-    error(function () {
-      if ($cookies.verify) {
-        $location.url('/verify')
-      } else {
-        $location.url('/sign-in')
-      }
-    });
-}]);
+graderApp.run(['$http', '$location', '$cookies', '$rootScope',
+  function ($http, $location, $cookies, $rootScope) {
+    $http.get('/api/user').
+      success(function (data) {
+        $rootScope.user = data;
+        $location.url('/school')
+      }).
+      error(function () {
+        if ($cookies.verify) {
+          $location.url('/verify')
+        } else {
+          $location.url('/sign-in')
+        }
+      });
+  }]);

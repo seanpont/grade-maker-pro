@@ -129,14 +129,12 @@ class AuthHandler(BaseHandler):
     def verify(self, token):
         self.check(not self.user, 'User is already signed in.')
         self.check(token, "auth token required")
-        logging.info("verify: checks complete")
         try:
             user_id = int(timestamper.unsign(token, max_age=60*30))
             self.user = models.Teacher.get_by_id(user_id)
-            logging.info("User retrieved")
             self.check(self.user)
             self.session['user_id'] = user_id
-            logging.info("cookie set")
+            self.response.delete_cookie('verify')
             # self.response.delete_cookie('verify')
         except BadData:
             self.abort(401)
@@ -145,11 +143,8 @@ class AuthHandler(BaseHandler):
 @route('/api/auth/verify')
 class VerifyHandler(AuthHandler):
     def post(self):
-        logging.info("VerifyHandler")
         self.verify(self.datum('token'))
-        logging.info("Verification complete")
         self.write(self.user)
-        logging.info("data written")
 
 
 @route('/api/auth/google')
@@ -160,11 +155,12 @@ class GoogleSignIn(BaseHandler):
         if not google_user:
             return self.redirect(google_users.create_login_url(self.request.url))
         user = models.Teacher.get_by_email(google_user.email())
-        if user:
-            self.session['user_id'] = user.key.id()
+        if not user:
+            user_key = models.Teacher.create(google_user.nickname() or google_user.email(), google_user.email())
         else:
-            return self.redirect('/#sign-in?error=no+user+found+for+' + google_user.email())
-        self.redirect('/')
+            user_key = user.key
+        self.session['user_id'] = user_key.id()
+        return self.redirect('/')
 
 
 @route('/api/user')

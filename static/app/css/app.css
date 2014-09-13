@@ -33,3 +33,31 @@ div.centered {
 div.spacer {
     height: 10px;
 }
+
+.navigation {
+    background: linear-gradient(to right, #a90329 0%, #8f0222 44%, #6d0019 100%);
+    color: white;
+    font-size: 18px;
+    padding: 12px
+}
+
+.navigation > div {
+    display: inline-block;
+}
+
+.navigation > .home {
+    font-weight: bold;
+}
+
+.school-options > li {
+    border: 1px solid #999;
+    -webkit-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    -moz-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    display: table;
+    height: 100%;
+    padding: 10px;
+    position: relative;
+    text-transform: uppercase;
+    width: 100%;
+}

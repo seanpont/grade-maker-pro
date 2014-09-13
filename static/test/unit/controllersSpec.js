@@ -12,6 +12,7 @@ describe('GraderApp controllers', function () {
   });
 
   beforeEach(module('graderControllers'));
+  beforeEach(module('ngCookies'));
 
   var user = {
     name: "Sean Pont",
@@ -19,14 +20,14 @@ describe('GraderApp controllers', function () {
     classrooms: [1, 2, 3]
   };
 
-  var scope, ctrl, $controller, $location, $httpBackend, Data;
+  var scope, ctrl, $controller, $location, $httpBackend, $cookies;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _$location_, _$controller_, _Data_) {
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _$location_, _$controller_, _$cookies_) {
     $httpBackend = _$httpBackend_;
     $location = _$location_;
     $controller = _$controller_;
     scope = $rootScope.$new();
-    Data = _Data_;
+    $cookies = _$cookies_;
   }));
 
   // ===== SignInCtrl ======================================================================
@@ -65,15 +66,18 @@ describe('GraderApp controllers', function () {
 
     it('should verify the code', function() {
       $httpBackend.expectPOST('/api/auth/verify', {token: 123456}).respond(user);
-      ctrl = $controller('VerifyCtrl', {$scope: scope});
+      ctrl = $controller('VerifyCtrl', {$scope: scope, $cookies: $cookies});
       scope.verify();
       expect(scope.error).toBeDefined();
       scope.token = 123456;
       scope.verify();
       $httpBackend.flush();
-      expect(Data.user).toEqualData(user);
-      expect($location.path()).toBe('/hallway');
+      expect(scope.user).toEqualData(user);
+      expect($location.path()).toBe('/school');
     });
   });
+
+  // ===== SchoolCtrl ======================================================================
+
 
 });

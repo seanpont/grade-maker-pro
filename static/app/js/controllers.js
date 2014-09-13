@@ -8,6 +8,8 @@ var graderControllers = angular.module('graderControllers', [
 
 graderControllers.controller('HomeCtrl', function() {});
 
+// ===== SIGN IN ======================================================================
+
 graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '$location',
   function ($scope, $http, $routeParams, $location) {
 
@@ -49,8 +51,10 @@ graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '
   }
 ]);
 
-graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$cookies', 'Data',
-  function ($scope, $http, $location, $cookies, Data) {
+// ===== VERIFY ======================================================================
+
+graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$cookies', '$rootScope',
+  function ($scope, $http, $location, $cookies, $rootScope) {
     $scope.verify = function() {
       if (!$scope.token) {
         $scope.error = "Verification code required";
@@ -58,8 +62,8 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
       }
       $http.post('/api/auth/verify', {token: $scope.token}).
         success(function(data) {
-          Data.user = data;
-          $location.url('/hallway');
+          $rootScope.user = data;
+          $location.url('/school');
         }).
         error(function() {
           $scope.error = 'Verification code invalid or expired';
@@ -74,7 +78,7 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 ]);
 
 
-graderControllers.controller('HallwayCtrl', ['$scope', 'Data',
+graderControllers.controller('SchoolCtrl', ['$scope', 'Data',
   function ($scope, Data) {
 
   }
