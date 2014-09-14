@@ -11,23 +11,20 @@ graderControllers.controller('HomeCtrl', function () {
 
 // ===== SIGN IN ======================================================================
 
-graderControllers.controller('SignInCtrl', ['$scope', '$http', '$routeParams', '$location',
-  function ($scope, $http, $routeParams, $location) {
+graderControllers.controller('SignInCtrl', ['$scope', '$http', '$location',
+  function ($scope, $http, $location) {
 
     $scope.newUser = true;
-    $scope.error = $routeParams.error || '';
+    $scope.error = null;
     $scope.clearError = function () {
       $scope.error = null;
     };
-
     $scope.signIn = function () {
       $scope.newUser = false;
     };
-
     $scope.signUp = function () {
       $scope.newUser = true;
     };
-
     $scope.authenticate = function () {
 
       // VALIDATION
@@ -114,7 +111,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
           $scope.createClassroom.error = null;
           $scope.show.createClassroom = false;
         },
-        function(response) {
+        function (response) {
           console.log("Could not create classroom")
           console.log(response);
           $scope.createClassroom.inProgress = false;

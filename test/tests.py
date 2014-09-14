@@ -15,6 +15,8 @@ import json
 
 class UnitTest(unittest.TestCase):
 
+
+
     # noinspection PyMethodOverriding
     def setUp(self):
         # Testbed stubs
@@ -29,26 +31,29 @@ class UnitTest(unittest.TestCase):
         self.patcher = mock.patch('app.views.get_current_session')
         get_current_session = self.patcher.start()
         get_current_session.return_value = {}
+        # User info
+        self.name = 'Sean Pont'
+        self.email = 'Sean@GateAcademy.org'
 
     def tearDown(self):
         self.patcher.stop()
         self.testbed.deactivate()
 
     def test_model_teacher(self):
-        name, email = 'Sean Pont', 'seanpont@gmail.com'
-        me = models.Teacher.get_by_email(email)
+        me = models.Teacher.get_by_email(self.email)
         self.assertEqual(me, None)
-        teacher_key = models.Teacher.create(name, email)
-        self.assertIsNot(teacher_key, None)
-        persisted = teacher_key.get()
-        assert isinstance(persisted, models.Teacher)
-        self.assertEqual(persisted.email, email)
+        teacher = models.Teacher.get_or_create(self.name, self.email)
+        self.assertIsNot(teacher, None)
+        school = teacher.key.parent().get()
+        self.assertIsNotNone(school)
+        # school should have been created as well
+        self.assertEqual(teacher.email, self.email.lower())
 
     def test_welcome_email(self):
-        views.send_welcome_email("Sean Pont", "seanpont@gmail.com", "/api/auth", "abc123")
-        messages = self.mail_stub.get_sent_messages(to='seanpont@gmail.com')
+        views.send_welcome_email(self.name, self.email, "/api/auth", "abc123")
+        messages = self.mail_stub.get_sent_messages(to=self.email)
         self.assertEqual(1, len(messages))
-        self.assertEqual('Sean Pont <seanpont@gmail.com>', messages[0].to)
+        self.assertEqual('%s <%s>' % (self.name, self.email), messages[0].to)
 
     # ===== HANDLERS ===============================================================
 
@@ -63,26 +68,26 @@ class UnitTest(unittest.TestCase):
         return response.body and json.loads(response.body[5:])
 
     def authorize(self):
-        self.post('/api/auth', {'name': 'Sean', 'email': 'seanpont@gmail.com'})
+        self.post('/api/auth', {'name': self.name, 'email': self.email})
 
     def sign_in(self):
         self.authorize()
-        user = models.Teacher.get_by_email('seanpont@gmail.com')
-        token = views.timestamper.sign(str(user.key.id()))
+        token = views.timestamper.sign(self.email)
         return self.post('/api/auth/verify', {'token': token})
 
     # ----- AUTH -----------------------------------------------------------------
 
     def test_auth_handler(self):
-        response = self.app.post('/api/auth', '{"name": "Sean", "email": "seanpont@gmail.com"}')
+        response = self.app.post('/api/auth', '{"name": "%s", "email": "%s"}' % (self.name, self.email))
         self.assertEqual(response.status_int, 200)
-        self.assertIsNotNone(models.Teacher.get_by_email('seanpont@gmail.com'))
-        messages = self.mail_stub.get_sent_messages('seanpont@gmail.com')
+        user = models.Teacher.get_by_email(self.email)
+        self.assertIsNotNone(user)
+        messages = self.mail_stub.get_sent_messages(self.email.lower())
         self.assertEqual(len(messages), 1)
 
     def test_verification_handler(self):
         user = self.sign_in()
-        self.assertEqual(user['email'], 'seanpont@gmail.com')
+        self.assertEqual(user['email'], self.email.lower())
 
     # ----- CLASSES -----------------------------------------------------------------
 
@@ -90,4 +95,7 @@ class UnitTest(unittest.TestCase):
         self.sign_in()
         classes = self.get('/api/classroom')
         self.assertEqual(len(classes), 0)
+        classroom = self.post('/api/classroom', {'name': '7th grade math'})
+        self.assertEqual(classroom['name'], '7th grade math')
+        self.assertEqual(len(self.get('/api/classroom')), 1)
 
