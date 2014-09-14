@@ -13,9 +13,9 @@ assignment name | assignment date | student1 | student2 | student 3
 
 
 school:
-    classes:
-        show classes:
-            show class:
+    classrooms:
+        show classrooms:
+            show classroom:
                 name
                 students
                 faculty

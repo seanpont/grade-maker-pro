@@ -9,9 +9,9 @@ graderServices.factory('User', ['$resource',
         return $resource('/api/user');
     }]);
 
-graderServices.factory('Class', ['$resource',
+graderServices.factory('Classroom', ['$resource',
     function ($resource) {
-        return $resource('/api/class/:classId', {classId:'@id'});
+        return $resource('/api/classroom/:classroomId', {classId:'@id'});
     }]);
 
 

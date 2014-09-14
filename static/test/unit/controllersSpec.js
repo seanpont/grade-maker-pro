@@ -81,10 +81,23 @@ describe('GraderApp controllers', function () {
 
   describe('SchoolCtrl', function() {
 
-    it('should show classes', function() {
-      scope.user = user;
+    it('should be able to create a classroom', function() {
+      $httpBackend.expectGET('/api/classroom').respond([]);
       ctrl = $controller('SchoolCtrl', {$scope: scope});
-      scope.showClasses();
+      $httpBackend.flush();
+      expect(scope.classrooms.length).toBe(0);
+
+      // error case
+      scope.createClassroom.create();
+      expect(scope.createClassroom.error).toMatch("Please.*");
+
+      // happy case: Math!
+      scope.createClassroom.name = "Math";
+      $httpBackend.expectPOST('/api/classroom', {name: 'Math'}).
+        respond({name: 'Math', students: []});
+      scope.createClassroom.create();
+      $httpBackend.flush();
+      expect(scope.classrooms.length).toBe(1);
 
 
 

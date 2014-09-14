@@ -38,11 +38,12 @@ div.spacer {
     background: linear-gradient(to right, #a90329 0%, #8f0222 44%, #6d0019 100%);
     color: white;
     font-size: 18px;
-    padding: 12px
+    padding: 10px
 }
 
 .navigation > div {
     display: inline-block;
+    margin-top: 3px;
 }
 
 .navigation > .home {
@@ -50,13 +51,16 @@ div.spacer {
 }
 
 .navigation input {
-    display: inline-block;
+    display: block;
     width: 300px;
-    margin-left: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .items {
-    margin-top: 15px;
+    margin: 0;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .items > li {
@@ -71,4 +75,15 @@ div.spacer {
     text-transform: uppercase;
     cursor: pointer;
     margin-right: 5px;
+    margin-top: 10px;
+}
+
+.items > form {
+    margin-top: 10px;
+}
+
+.items > li.selected {
+    -webkit-box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
+    -moz-box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
+    box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
 }
