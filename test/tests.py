@@ -91,11 +91,13 @@ class UnitTest(unittest.TestCase):
 
     # ----- CLASSES -----------------------------------------------------------------
 
-    def test_classes_handler(self):
+    def test_classroom_handler(self):
         self.sign_in()
-        classes = self.get('/api/classroom')
-        self.assertEqual(len(classes), 0)
+        classrooms = self.get('/api/classroom')
+        self.assertEqual(len(classrooms), 0)
         classroom = self.post('/api/classroom', {'name': '7th grade math'})
         self.assertEqual(classroom['name'], '7th grade math')
-        self.assertEqual(len(self.get('/api/classroom')), 1)
+        classrooms = self.get('/api/classroom')
+        self.assertEqual(len(classrooms), 1)
+        self.assertEqual(classrooms[0]['name'], '7th grade math')
 

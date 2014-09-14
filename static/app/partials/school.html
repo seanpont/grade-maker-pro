@@ -17,14 +17,14 @@
 
 <ul ng-show="show.classrooms" class="items">
   <li ng-repeat="classroom in classrooms | filter:q">
-    {{ class.name }}
+    {{ classroom.name }}
   </li>
   <li ng-hide="show.createClassroom" ng-click="show.createClassroom = true">
-    + Create new class
+    + Add Classroom
   </li>
   <form ng-show="show.createClassroom" ng-submit="createClassroom.create()" class="form-inline" role="form">
     <div class="form-group">
-      <input ng-model="createClassroom.name" class="form-control">
+      <input ng-model="createClassroom.name" focus-me class="form-control">
       <input type="submit" ng-disabled="createClassroom.inProgress" class="btn btn-primary" value="Create">
       <span class="error">{{ createClassroom.error }}</span>
     </div>

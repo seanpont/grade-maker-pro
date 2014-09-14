@@ -10,9 +10,7 @@ from google.appengine.ext import ndb
 
 def to_dict(model):
     assert isinstance(model, ndb.Model)
-    d = {}
-    for field in model._values.keys():
-        d[field] = getattr(model, field)
+    d = model.to_dict()
     d['id'] = model.key.id()
     return d
 

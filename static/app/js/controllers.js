@@ -112,7 +112,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
           $scope.show.createClassroom = false;
         },
         function (response) {
-          console.log("Could not create classroom")
+          console.log("Could not create classroom");
           console.log(response);
           $scope.createClassroom.inProgress = false;
           $scope.createClassroom.error = response.data;

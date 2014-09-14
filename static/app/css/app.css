@@ -80,6 +80,14 @@ div.spacer {
 
 .items > form {
     margin-top: 10px;
+    display: inline-block;
+    border: 1px solid #999;
+    padding: 3px;
+    position: relative;
+    top: -1px;
+    -webkit-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    -moz-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
 }
 
 .items > li.selected {

@@ -14,7 +14,7 @@ import json
 import urllib
 from string import Template
 from functools import wraps
-from collections import defaultdict
+from collections import defaultdict, Iterable
 
 import logging
 import webapp2
@@ -53,7 +53,10 @@ class BaseHandler(webapp2.RequestHandler):
     def write(self, data):
         if isinstance(data, ndb.Model):
             data = models.to_dict(data)
+        elif isinstance(data, Iterable):
+            data = [models.to_dict(m) for m in data]
         json_txt = ")]}',\n" + json.dumps(data, default=datetime_handler)
+        logging.info(self.request.path + ' response: ' + json_txt)
         self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.response.write(json_txt)
 
@@ -199,7 +202,6 @@ class ClassHandler(AuthorizedHandler):
         self.check(name)
         classroom = models.Classroom.create(name, self.user)
         self.write(classroom)
-
 
 
 # ===== ADMIN ========================================================
