@@ -46,7 +46,7 @@ describe('GraderApp controllers', function () {
       expect($location.path()).toBe('/verify')
     });
 
-    it('creates a user when commanded thusly', function() {
+    it('creates a user when commanded thusly', function () {
       $httpBackend.expectPOST('/api/auth', {email: user.email, name: user.name}).respond({});
       ctrl = $controller('SignInCtrl', {$scope: scope});
       scope.signUp();
@@ -62,9 +62,9 @@ describe('GraderApp controllers', function () {
 
   // ===== VerifyCtrl ======================================================================
 
-  describe('VerifyCtrl', function() {
+  describe('VerifyCtrl', function () {
 
-    it('should verify the code', function() {
+    it('should verify the code', function () {
       $httpBackend.expectPOST('/api/auth/verify', {token: 123456}).respond(user);
       ctrl = $controller('VerifyCtrl', {$scope: scope, $cookies: $cookies});
       scope.verify();
@@ -79,9 +79,9 @@ describe('GraderApp controllers', function () {
 
   // ===== SchoolCtrl ======================================================================
 
-  describe('SchoolCtrl', function() {
+  describe('SchoolCtrl', function () {
 
-    it('should be able to create a classroom', function() {
+    it('should be able to create a classroom', function () {
       $httpBackend.expectGET('/api/classroom').respond([]);
       ctrl = $controller('SchoolCtrl', {$scope: scope});
       $httpBackend.flush();
@@ -98,12 +98,48 @@ describe('GraderApp controllers', function () {
       scope.createClassroom.create();
       $httpBackend.flush();
       expect(scope.classrooms.length).toBe(1);
-
-
-
-
     });
 
+    var classroom = {
+      name: 'Phoenix',
+      id: 1234
+    };
+
+    var inflatedClassroom = {
+      name: 'Phoenix',
+      id: 'classroom1',
+      students: [
+        {name: 'Bobby', id: 2345},
+        {name: 'Jimmy', id: 3456}
+      ],
+      assignments: [
+        {name: 'Quiz1',
+          total_points: 100,
+          grades: {
+            2345: 88,
+            3456: 93
+          }
+        }
+      ]
+    };
+
+    it('should be able to display a classroom', function () {
+      $httpBackend.expectGET('/api/classroom').respond([classroom])
+      ctrl = $controller('SchoolCtrl', {$scope: scope});
+      $httpBackend.flush();
+      expect(scope.classrooms[0].id).toBe(classroom.id);
+
+      $httpBackend.expectGET('/api/classroom/' + classroom.id).respond(inflatedClassroom);
+      scope.displayClassroom(scope.classrooms[0]);
+      $httpBackend.flush();
+      expect(scope.classroom).toEqualData(inflatedClassroom);
+      expect(scope.show.classroom).toBe(true);
+      var assignment = scope.classroom.assignments[0];
+      var student1 = scope.classroom.students[0];
+      var student2 = scope.classroom.students[1];
+      expect(assignment.grades[student1.id]).toBe(88);
+      expect(assignment.grades[student2.id]).toBe(93);
+    });
 
 
   })

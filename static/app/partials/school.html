@@ -6,7 +6,7 @@
 
 
 <ul class="items">
-  <li ng-click="show.classrooms = true" class="{{ selected(show.classrooms) }}">
+  <li ng-click="show.classrooms = true" class="{{ selectedIf(show.classrooms) }}">
     Classrooms
   </li>
   <li>Students</li>
@@ -16,7 +16,7 @@
 
 <ul ng-show="show.classrooms" class="items">
   <li ng-repeat="_classroom in classrooms | filter:q"
-      class="{{ selected(_classroom.key == classroom.key) }}"
+      class="{{ selectedIf(_classroom.id == classroom.id) }}"
       ng-click="displayClassroom(_classroom)">
     {{ _classroom.name }}
   </li>
@@ -45,7 +45,7 @@
     <tr ng-repeat="assignment in classroom.assignments | filter:q">
       <td>{{ assignment.name }}</td>
       <td ng-repeat="student in classroom.students | filter:q">
-        {{ grade_for(assignment, student) }}
+        {{ assignment.grades[student.key] }}
       </td>
     </tr>
     <tr>

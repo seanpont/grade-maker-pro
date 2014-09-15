@@ -49,6 +49,7 @@ class BaseHandler(webapp2.RequestHandler):
         self.session = get_current_session()
         user_key = self.session.get('user_key')
         self.user = user_key and ndb.Key(urlsafe=user_key).get()
+        self.school_key = self.user and self.user.key.parent()
 
     def write(self, data):
         if isinstance(data, ndb.Model):
@@ -150,14 +151,14 @@ class AuthHandler(BaseHandler):
             self.abort(401)
 
 
-@route('/api/auth/verify')
+@route('/api/auth/verify/?')
 class VerifyHandler(AuthHandler):
     def post(self):
         self.verify(self.datum('token'))
         self.write(self.user)
 
 
-@route('/api/auth/google')
+@route('/api/auth/google/?')
 class GoogleSignIn(BaseHandler):
     def get(self):
         if self.user:
@@ -170,14 +171,14 @@ class GoogleSignIn(BaseHandler):
         return self.redirect('/')
 
 
-@route('/api/user')
+@route('/api/user/?')
 class UserHandler(BaseHandler):
     def get(self):
         self.check(self.user, 404, 'user has not signed in')
         self.write(self.user)
 
 
-@route('/api/blobstore/(.*)')
+@route('/api/blobstore/(.*)/?')
 class Blobstore(BlobstoreDownloadHandler):
     def get(self, resource):
         resource = str(urllib.unquote(resource))
@@ -185,14 +186,14 @@ class Blobstore(BlobstoreDownloadHandler):
         self.send_blob(blob_info)
 
 
-@route('/api/sign-out')
+@route('/api/sign-out/?')
 class SignOut(BaseHandler):
     def post(self):
         self.session.terminate()
 
 # ===== CLASSES ===============================================================
 
-@route('/api/classroom')
+@route('/api/classroom/?')
 class ClassroomsHandler(AuthorizedHandler):
     def get(self):
         self.write(self.user.get_classrooms())
@@ -204,25 +205,26 @@ class ClassroomsHandler(AuthorizedHandler):
         self.write(classroom)
 
 
-@route('/api/classroom/(.*)')
+@route('/api/classroom/(\d+)/?')
 class ClassroomHandler(AuthorizedHandler):
-    def get(self, key):
-        classroom = ndb.Key(urlsafe=key).get()
+    def get(self, classroom_id):
+        logging.info("%s %s" % (classroom_id, type(classroom_id)))
+        classroom = models.Classroom.get_by_id(int(classroom_id), parent=self.school_key)
         self.check(classroom, 404)
         students = ndb.get_multi(classroom.students)
         assignments = models.Assignment.query(ancestor=classroom.key)
         response = models.to_dict(classroom)
         # response['students'] = [models.to_dict(student) for student in students]
         # response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
-        response['students'] = [{'name': 'John'}]
-        response['assignments'] = [{'name': 'Quiz 1'}]
+        response['students'] = [{'name': 'John', 'key': 'john'}]
+        response['assignments'] = [{'name': 'Quiz 1', 'grades': {'john': 88}}]
         self.write(response)
 
 
 # ===== ADMIN ========================================================
 
 
-@route('/api/perform-migrations')
+@route('/api/perform-migrations/?')
 class AdminMigration(AuthorizedHandler):
     # noinspection PyMethodMayBeStatic
     def get(self):

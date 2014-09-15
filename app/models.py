@@ -11,7 +11,7 @@ from google.appengine.ext import ndb
 def to_dict(model):
     assert isinstance(model, ndb.Model)
     d = model.to_dict()
-    d['key'] = model.key.urlsafe()
+    d['id'] = model.key.id()
     return d
 
 
@@ -93,7 +93,7 @@ class Teacher(ndb.Model):
 
 class Grade(ndb.Model):
     # parent = Assignment
-    student = ndb.KeyProperty(kind=Student, required=True)
+    student_key = ndb.KeyProperty(kind=Student, required=True)
     points = ndb.FloatProperty(required=True)
 
 
@@ -102,7 +102,6 @@ class Assignment(ndb.Model):
     name = ndb.StringProperty(required=True)
     total_points = ndb.IntegerProperty(required=True)
     grades = ndb.StructuredProperty(Grade, repeated=True)
-    classroom = ndb.KeyProperty(required=True, kind=Classroom)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 

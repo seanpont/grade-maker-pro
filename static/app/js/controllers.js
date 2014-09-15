@@ -86,7 +86,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
       classroom: false
     };
 
-    $scope.selected = function (bool) {
+    $scope.selectedIf = function (bool) {
       return bool ? 'selected' : '';
     };
 
@@ -123,14 +123,11 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
     };
 
     $scope.displayClassroom = function(classroom) {
-      console.log('Get classroom: ' + classroom.key)
-      classroom.$get({ key: classroom.key });
+      console.log('Get classroom: ' + classroom.id);
+      classroom.$get({ id: classroom.id });
       $scope.classroom = classroom;
       $scope.show.classroom = true;
     };
 
-    $scope.grade_for = function(assignment, student) {
-      return 90;
-    }
   }
 ]);

@@ -91,7 +91,7 @@ class UnitTest(unittest.TestCase):
 
     # ----- CLASSES -----------------------------------------------------------------
 
-    def test_classroom_handler(self):
+    def test_classrooms_handler(self):
         self.sign_in()
         classrooms = self.get('/api/classroom')
         self.assertEqual(len(classrooms), 0)
@@ -100,4 +100,11 @@ class UnitTest(unittest.TestCase):
         classrooms = self.get('/api/classroom')
         self.assertEqual(len(classrooms), 1)
         self.assertEqual(classrooms[0]['name'], '7th grade math')
+
+    def test_classroom_handler(self):
+        self.sign_in()
+        classroom = self.post('/api/classroom', {'name': 'Phoenix'})
+        self.assertIsNotNone(classroom['id'])
+        classroom = self.get('/api/classroom/%s' % classroom['id'])
+        self.assertIsNotNone(classroom)
 

@@ -11,7 +11,7 @@ graderServices.factory('User', ['$resource',
 
 graderServices.factory('Classroom', ['$resource',
   function ($resource) {
-    return $resource('/api/classroom/:key', {key: '@key'});
+    return $resource('/api/classroom/:id', {id: '@id'});
   }]);
 
 
