@@ -5,9 +5,8 @@
 </div>
 
 
-
 <ul class="items">
-  <li ng-click="show.classrooms=true" class="{{ selected('classrooms') }}">
+  <li ng-click="show.classrooms = true" class="{{ selected(show.classrooms) }}">
     Classrooms
   </li>
   <li>Students</li>
@@ -16,8 +15,10 @@
 </ul>
 
 <ul ng-show="show.classrooms" class="items">
-  <li ng-repeat="classroom in classrooms | filter:q">
-    {{ classroom.name }}
+  <li ng-repeat="_classroom in classrooms | filter:q"
+      class="{{ selected(_classroom.key == classroom.key) }}"
+      ng-click="displayClassroom(_classroom)">
+    {{ _classroom.name }}
   </li>
   <li ng-hide="show.createClassroom" ng-click="show.createClassroom = true">
     + Add Classroom
@@ -26,8 +27,29 @@
     <div class="form-group">
       <input ng-model="createClassroom.name" focus-me class="form-control">
       <input type="submit" ng-disabled="createClassroom.inProgress" class="btn btn-primary" value="Create">
+      <button type="reset" ng-click="show.createClassroom = false" class="btn btn-warning">Cancel</button>
       <span class="error">{{ createClassroom.error }}</span>
     </div>
   </form>
 </ul>
 
+<div class="classroom" ng-show="show.classroom">
+  <table>
+    <tr>
+      <td>Assignment</td>
+      <td ng-repeat="student in classroom.students | filter:q">
+        {{ student.name }}
+      </td>
+      <td>+ Add Student</td>
+    </tr>
+    <tr ng-repeat="assignment in classroom.assignments | filter:q">
+      <td>{{ assignment.name }}</td>
+      <td ng-repeat="student in classroom.students | filter:q">
+        {{ grade_for(assignment, student) }}
+      </td>
+    </tr>
+    <tr>
+      <td>+ Add Assignment</td>
+    </tr>
+  </table>
+</div>

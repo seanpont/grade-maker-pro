@@ -81,16 +81,18 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 
 graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
   function ($scope, Classroom) {
-    $scope.show = {};
+    $scope.show = {
+      classrooms: false,
+      classroom: false
+    };
 
-    $scope.selected = function (name) {
-      return $scope.show[name] ? 'selected' : '';
-    }
+    $scope.selected = function (bool) {
+      return bool ? 'selected' : '';
+    };
 
     // ----- CLASSROOMS --------------------------------------------------------------
 
     $scope.classrooms = Classroom.query(function () {
-      console.log('Classrooms: ')
       console.log($scope.classrooms);
     });
 
@@ -118,6 +120,17 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
           $scope.createClassroom.error = response.data;
         }
       );
+    };
+
+    $scope.displayClassroom = function(classroom) {
+      console.log('Get classroom: ' + classroom.key)
+      classroom.$get({ key: classroom.key });
+      $scope.classroom = classroom;
+      $scope.show.classroom = true;
+    };
+
+    $scope.grade_for = function(assignment, student) {
+      return 90;
     }
   }
 ]);

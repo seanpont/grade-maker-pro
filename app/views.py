@@ -53,7 +53,7 @@ class BaseHandler(webapp2.RequestHandler):
     def write(self, data):
         if isinstance(data, ndb.Model):
             data = models.to_dict(data)
-        elif isinstance(data, Iterable):
+        elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], ndb.Model):
             data = [models.to_dict(m) for m in data]
         json_txt = ")]}',\n" + json.dumps(data, default=datetime_handler)
         logging.info(self.request.path + ' response: ' + json_txt)
@@ -76,7 +76,7 @@ class BaseHandler(webapp2.RequestHandler):
             return data.get(args[0])
         return [data.get(arg) for arg in args]
 
-    def check(self, condition, message='', code=400):
+    def check(self, condition, code=400, message=''):
         if not condition:
             logging.info(message)
             self.abort(code, message)
@@ -85,7 +85,7 @@ class BaseHandler(webapp2.RequestHandler):
 class AuthorizedHandler(BaseHandler):
     def initialize(self, request, response):
         super(AuthorizedHandler, self).initialize(request, response)
-        self.check(self.user, code=401)
+        self.check(self.user, 401)
 
 
 # ===== AUTHENTICATION ==========================================================================
@@ -117,15 +117,15 @@ The GradeMaker Pro Team
 class AuthHandler(BaseHandler):
 
     def post(self):
-        self.check(not self.user, "user already signed in!")
+        self.check(not self.user, 400, "user already signed in!")
         name, email = self.datum('name', 'email')
-        self.check(email, "email required!")
+        self.check(email, 400, "email required!")
         email = email.lower()
         user = models.Teacher.get_by_email(email)
         if user:
             name = user.name
         else:
-            self.check(name, 'name required')
+            self.check(name, 400, 'name required')
             models.Teacher.get_or_create(name, email)
         token = timestamper.sign(email)
         send_welcome_email(name, email, self.request.url, token)
@@ -139,7 +139,7 @@ class AuthHandler(BaseHandler):
     def verify(self, token):
         if self.user:
             return
-        self.check(token, "auth token required")
+        self.check(token, 400, "auth token required")
         try:
             email = timestamper.unsign(token, max_age=60*30)
             self.user = models.Teacher.get_by_email(email)
@@ -173,7 +173,7 @@ class GoogleSignIn(BaseHandler):
 @route('/api/user')
 class UserHandler(BaseHandler):
     def get(self):
-        self.check(self.user, 'user has not signed in', 404)
+        self.check(self.user, 404, 'user has not signed in')
         self.write(self.user)
 
 
@@ -193,7 +193,7 @@ class SignOut(BaseHandler):
 # ===== CLASSES ===============================================================
 
 @route('/api/classroom')
-class ClassHandler(AuthorizedHandler):
+class ClassroomsHandler(AuthorizedHandler):
     def get(self):
         self.write(self.user.get_classrooms())
 
@@ -202,6 +202,21 @@ class ClassHandler(AuthorizedHandler):
         self.check(name)
         classroom = models.Classroom.create(name, self.user)
         self.write(classroom)
+
+
+@route('/api/classroom/(.*)')
+class ClassroomHandler(AuthorizedHandler):
+    def get(self, key):
+        classroom = ndb.Key(urlsafe=key).get()
+        self.check(classroom, 404)
+        students = ndb.get_multi(classroom.students)
+        assignments = models.Assignment.query(ancestor=classroom.key)
+        response = models.to_dict(classroom)
+        # response['students'] = [models.to_dict(student) for student in students]
+        # response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
+        response['students'] = [{'name': 'John'}]
+        response['assignments'] = [{'name': 'Quiz 1'}]
+        self.write(response)
 
 
 # ===== ADMIN ========================================================

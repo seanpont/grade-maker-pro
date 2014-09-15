@@ -51,10 +51,10 @@ div.spacer {
 }
 
 .navigation input {
-    display: block;
+    display: inline-block;
     width: 300px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 15px;
+    margin-right: 15px;
 }
 
 .items {
@@ -90,8 +90,30 @@ div.spacer {
     box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
 }
 
+.items > form > div.form-group {
+    margin-bottom: 0;
+}
+
 .items > li.selected {
     -webkit-box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
     -moz-box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
     box-shadow: #74A6FF 0 0 0 3px inset, #edddf5 2px 3px 0;
+}
+
+.classroom table {
+    margin: 10px;
+}
+
+.classroom table td {
+    border: 1px solid #999;
+    -webkit-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    -moz-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
+    padding: 10px;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+.add-student {
+    cursor: pointer;
 }

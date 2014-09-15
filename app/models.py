@@ -11,7 +11,7 @@ from google.appengine.ext import ndb
 def to_dict(model):
     assert isinstance(model, ndb.Model)
     d = model.to_dict()
-    d['id'] = model.key.id()
+    d['key'] = model.key.urlsafe()
     return d
 
 
