@@ -10,7 +10,7 @@ assignment name | assignment date | student1 | student2 | student 3
    assignment2       9/30/2014          98        89         81
    assignment3       10/3/2014          97        84         87
 
-
+* make the logo spin when fetching data *
 
 school:
     classrooms:

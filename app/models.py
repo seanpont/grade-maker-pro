@@ -34,7 +34,7 @@ class School(ndb.Model):
 class Student(ndb.Model):
     # parent = School
     name = ndb.StringProperty(required=True)
-    email = ndb.StringProperty(required=True)
+    email = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 

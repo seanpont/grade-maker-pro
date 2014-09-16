@@ -25,7 +25,7 @@
   </li>
   <form ng-show="show.createClassroom" ng-submit="createClassroom.create()" class="form-inline" role="form">
     <div class="form-group">
-      <input ng-model="createClassroom.name" focus-me class="form-control">
+      <input ng-model="createClassroom.name" class="form-control">
       <input type="submit" ng-disabled="createClassroom.inProgress" class="btn btn-primary" value="Create">
       <button type="reset" ng-click="show.createClassroom = false" class="btn btn-warning">Cancel</button>
       <span class="error">{{ createClassroom.error }}</span>
@@ -40,12 +40,22 @@
       <td ng-repeat="student in classroom.students | filter:q">
         {{ student.name }}
       </td>
-      <td>+ Add Student</td>
+      <td class="form-container">
+        <span ng-hide="show.addStudent" ng-click="show.addStudent=true" class="add-student">+ Add Student</span>
+        <form ng-show="show.addStudent" ng-submit="createStudent.create()" class="form-inline" role="form">
+          <div class="form-group">
+            <input ng-model="createStudent.name" class="form-control">
+            <input type="submit" ng-disabled="createStudent.inProgress" class="btn btn-primary" value="Create">
+            <button type="reset" ng-click="show.addStudent = false" class="btn btn-warning">Cancel</button>
+            <span class="error">{{ createStudent.error }}</span>
+          </div>
+        </form>
+      </td>
     </tr>
     <tr ng-repeat="assignment in classroom.assignments | filter:q">
       <td>{{ assignment.name }}</td>
       <td ng-repeat="student in classroom.students | filter:q">
-        {{ assignment.grades[student.key] }}
+        {{ assignment.grades[student.id] }}
       </td>
     </tr>
     <tr>

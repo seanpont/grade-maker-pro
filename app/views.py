@@ -208,7 +208,6 @@ class ClassroomsHandler(AuthorizedHandler):
 @route('/api/classroom/(\d+)/?')
 class ClassroomHandler(AuthorizedHandler):
     def get(self, classroom_id):
-        logging.info("%s %s" % (classroom_id, type(classroom_id)))
         classroom = models.Classroom.get_by_id(int(classroom_id), parent=self.school_key)
         self.check(classroom, 404)
         students = ndb.get_multi(classroom.students)
@@ -216,8 +215,8 @@ class ClassroomHandler(AuthorizedHandler):
         response = models.to_dict(classroom)
         # response['students'] = [models.to_dict(student) for student in students]
         # response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
-        response['students'] = [{'name': 'John', 'key': 'john'}]
-        response['assignments'] = [{'name': 'Quiz 1', 'grades': {'john': 88}}]
+        response['students'] = [{'name': 'John', 'id': '489'}]
+        response['assignments'] = [{'name': 'Quiz 1', 'grades': {'489': 88}}]
         self.write(response)
 
 

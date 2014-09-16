@@ -14,6 +14,10 @@ graderServices.factory('Classroom', ['$resource',
     return $resource('/api/classroom/:id', {id: '@id'});
   }]);
 
+graderServices.factory('Student', ['$resource',
+  function($resource) {
+    return $resource('/api/student/:id', {id: '@id'});
+  }]);
 
 
 

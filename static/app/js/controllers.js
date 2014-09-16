@@ -79,11 +79,12 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 
 // ===== SCHOOL ======================================================================
 
-graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
-  function ($scope, Classroom) {
+graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
+  function ($scope, Classroom, Student) {
     $scope.show = {
       classrooms: false,
-      classroom: false
+      classroom: false,
+      addStudent: false
     };
 
     $scope.selectedIf = function (bool) {
@@ -122,12 +123,29 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom',
       );
     };
 
-    $scope.displayClassroom = function(classroom) {
+    $scope.displayClassroom = function (classroom) {
       console.log('Get classroom: ' + classroom.id);
       classroom.$get({ id: classroom.id });
       $scope.classroom = classroom;
       $scope.show.classroom = true;
     };
+
+    $scope.createStudent = {};
+    $scope.createStudent.create = function () {
+      if (!$scope.createStudent.name) {
+        $scope.createStudent.error = "Name required";
+        return;
+      }
+      $scope.createStudent.inProgress = true;
+
+      Student.save({
+        name: $scope.createStudent.name,
+        classroom_id: $scope.classroom.id
+      }, function(student) {
+        $scope.classroom.students.push(student)
+        $scope.createStudent.inProgress = false;
+      });
+    }
 
   }
 ]);

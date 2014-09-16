@@ -107,7 +107,7 @@ describe('GraderApp controllers', function () {
 
     var inflatedClassroom = {
       name: 'Phoenix',
-      id: 'classroom1',
+      id: 1234,
       students: [
         {name: 'Bobby', id: 2345},
         {name: 'Jimmy', id: 3456}
@@ -139,6 +139,35 @@ describe('GraderApp controllers', function () {
       var student2 = scope.classroom.students[1];
       expect(assignment.grades[student1.id]).toBe(88);
       expect(assignment.grades[student2.id]).toBe(93);
+    });
+
+    var student = {
+      id: 49194,
+      name: 'Jeremy'
+    };
+
+    it('should be able to create a student', function() {
+      $httpBackend.whenGET('/api/classroom').respond([classroom]);
+      $httpBackend.whenGET('/api/classroom/' + classroom.id).respond(inflatedClassroom);
+      ctrl = $controller('SchoolCtrl', {$scope: scope});
+      $httpBackend.flush();
+      scope.displayClassroom(scope.classrooms[0]);
+      $httpBackend.flush();
+
+      scope.createStudent.create();
+      expect(scope.createStudent.error).toBeDefined();
+      scope.createStudent.name = student.name;
+      scope.createStudent.create();
+      $httpBackend.expectPOST('/api/student', {
+        name: 'Jeremy', classroom_id: classroom.id
+        }).respond(student);
+      $httpBackend.flush();
+      expect(scope.classroom.students.length).toBe(3);
+
+
+
+
+
     });
 
 
