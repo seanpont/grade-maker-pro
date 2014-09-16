@@ -130,22 +130,32 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
       $scope.show.classroom = true;
     };
 
-    $scope.createStudent = {};
-    $scope.createStudent.create = function () {
-      if (!$scope.createStudent.name) {
-        $scope.createStudent.error = "Name required";
+    $scope.addStudent = {};
+    $scope.addStudent.submit = function () {
+      if (!$scope.addStudent.name) {
+        $scope.addStudent.error = "Name required";
         return;
       }
-      $scope.createStudent.inProgress = true;
+      $scope.addStudent.inProgress = true;
 
       Student.save({
-        name: $scope.createStudent.name,
+        name: $scope.addStudent.name,
         classroom_id: $scope.classroom.id
-      }, function(student) {
-        $scope.classroom.students.push(student)
-        $scope.createStudent.inProgress = false;
+      }, function (student) {
+        $scope.classroom.students.push(student);
+        $scope.addStudent.name = null;
+        $scope.show.addStudent = false;
+        $scope.addStudent.inProgress = false;
+      }, function (response) {
+        console.log(response);
+        $scope.addStudent.error = response.data;
+        $scope.addStudent.inProgress = false;
       });
-    }
+    };
+
+    $scope.getStudentsByName = function (val) {
+      return Student.find({name: val, classroom_id: $scope.classroom.id})
+    };
 
   }
 ]);

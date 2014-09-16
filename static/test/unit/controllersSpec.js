@@ -154,22 +154,16 @@ describe('GraderApp controllers', function () {
       scope.displayClassroom(scope.classrooms[0]);
       $httpBackend.flush();
 
-      scope.createStudent.create();
-      expect(scope.createStudent.error).toBeDefined();
-      scope.createStudent.name = student.name;
-      scope.createStudent.create();
+      scope.addStudent.submit();
+      expect(scope.addStudent.error).toBeDefined();
+      scope.addStudent.name = student.name;
+      scope.addStudent.submit();
       $httpBackend.expectPOST('/api/student', {
         name: 'Jeremy', classroom_id: classroom.id
         }).respond(student);
       $httpBackend.flush();
       expect(scope.classroom.students.length).toBe(3);
-
-
-
-
-
     });
-
 
   })
 

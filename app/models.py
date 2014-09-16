@@ -19,16 +19,7 @@ def domain_of(email):
     return email.lower().split('@')[1]
 
 
-class School(ndb.Model):
-
-    @classmethod
-    @ndb.transactional()
-    def get_or_create_key(cls, email):
-        school_id = domain_of(email)
-        key = ndb.Key(School, school_id)
-        if not key.get():
-            return School(id=school_id).put()
-        return key
+School = 'School'
 
 
 class Student(ndb.Model):
@@ -37,6 +28,18 @@ class Student(ndb.Model):
     email = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
+
+    @classmethod
+    def name_to_key(cls, school_key, name):
+        return ndb.Key(School, school_key.id(), Student, name.lower())
+
+    @classmethod
+    @ndb.transactional()
+    def upsert(cls, school_key, name):
+        student = cls.name_to_key(school_key, name).get()
+        if not student:
+            student = Student(parent=school_key, name=name).put().get()
+        return student
 
 
 class Classroom(ndb.Model):
@@ -53,6 +56,14 @@ class Classroom(ndb.Model):
         teacher.classroomAccess.append(ClassroomAccess(classroom=classroom_key, access=True))
         teacher.put()
         return classroom_key.get()
+
+    @classmethod
+    @ndb.transactional()
+    def assign_student(cls, school_key, classroom_id, student):
+        classroom = cls.get_by_id(int(classroom_id), parent=school_key)
+        if not student.key in classroom.students:
+            classroom.students.append(student.key)
+            classroom.put()
 
 
 class ClassroomAccess(ndb.Model):
@@ -78,13 +89,12 @@ class Teacher(ndb.Model):
 
     @classmethod
     @ndb.transactional()
-    def get_or_create(cls, name, email):
+    def upsert(cls, name, email):
         email = email.lower()
         teacher = cls.key_for(email).get()
         if not teacher:
-            school_key = School.get_or_create_key(email)
-            teacher_key = Teacher(parent=school_key, id=email, name=name, email=email).put()
-            return teacher_key.get()
+            school_key = ndb.Key(School, domain_of(email))
+            teacher = Teacher(parent=school_key, id=email, name=name, email=email).put().get()
         return teacher
 
     def get_classrooms(self):

@@ -127,7 +127,7 @@ class AuthHandler(BaseHandler):
             name = user.name
         else:
             self.check(name, 400, 'name required')
-            models.Teacher.get_or_create(name, email)
+            models.Teacher.upsert(name, email)
         token = timestamper.sign(email)
         send_welcome_email(name, email, self.request.url, token)
         self.response.set_cookie('verify', 'true')
@@ -166,7 +166,7 @@ class GoogleSignIn(BaseHandler):
         google_user = google_users.get_current_user()
         if not google_user:
             return self.redirect(google_users.create_login_url(self.request.url))
-        user = models.Teacher.get_or_create(google_user.nickname(), google_user.email())
+        user = models.Teacher.upsert(google_user.nickname(), google_user.email())
         self.session['user_key'] = user.key.urlsafe()
         return self.redirect('/')
 
@@ -191,7 +191,7 @@ class SignOut(BaseHandler):
     def post(self):
         self.session.terminate()
 
-# ===== CLASSES ===============================================================
+# ===== CLASSROOM ===============================================================
 
 @route('/api/classroom/?')
 class ClassroomsHandler(AuthorizedHandler):
@@ -213,11 +213,28 @@ class ClassroomHandler(AuthorizedHandler):
         students = ndb.get_multi(classroom.students)
         assignments = models.Assignment.query(ancestor=classroom.key)
         response = models.to_dict(classroom)
-        # response['students'] = [models.to_dict(student) for student in students]
-        # response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
-        response['students'] = [{'name': 'John', 'id': '489'}]
-        response['assignments'] = [{'name': 'Quiz 1', 'grades': {'489': 88}}]
+        response['students'] = [models.to_dict(student) for student in students]
+        response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
         self.write(response)
+
+
+# ===== STUDENT ===============================================================
+
+@route('/api/student/?')
+class StudentHandler(AuthorizedHandler):
+    def post(self):
+        """
+        Requires a name and a classroom id.
+        First searches for the student by name.
+        If found, checks if the student is already in the classroom
+        If not in class, adds it to classroom.
+        If already in classroom, reports error.
+        If student does not exist, creates student and adds it to classroom.
+        """
+        name, classroom_id = self.datum('name', 'classroom_id')
+        student = models.Student.upsert(self.school_key, name)
+        models.Classroom.assign_student(self.school_key, classroom_id, student)
+        self.write(student)
 
 
 # ===== ADMIN ========================================================

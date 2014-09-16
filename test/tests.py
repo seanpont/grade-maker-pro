@@ -11,6 +11,7 @@ from app import views
 from lib import router
 import mock
 import json
+from app.utils import atterize
 
 
 class UnitTest(unittest.TestCase):
@@ -34,6 +35,8 @@ class UnitTest(unittest.TestCase):
         # User info
         self.name = 'Sean Pont'
         self.email = 'Sean@GateAcademy.org'
+        self.classroom_name = 'Phoenix'
+        self.student_name = 'Bobby Jones'
 
     def tearDown(self):
         self.patcher.stop()
@@ -42,11 +45,8 @@ class UnitTest(unittest.TestCase):
     def test_model_teacher(self):
         me = models.Teacher.get_by_email(self.email)
         self.assertEqual(me, None)
-        teacher = models.Teacher.get_or_create(self.name, self.email)
+        teacher = models.Teacher.upsert(self.name, self.email)
         self.assertIsNot(teacher, None)
-        school = teacher.key.parent().get()
-        self.assertIsNotNone(school)
-        # school should have been created as well
         self.assertEqual(teacher.email, self.email.lower())
 
     def test_welcome_email(self):
@@ -60,12 +60,12 @@ class UnitTest(unittest.TestCase):
     def get(self, path):
         response = self.app.get(path)
         self.assertEqual(response.status_int, 200)
-        return json.loads(response.body[5:])
+        return atterize(json.loads(response.body[5:]))
 
     def post(self, path, body):
         response = self.app.post(path, json.dumps(body))
         self.assertEqual(response.status_int, 200)
-        return response.body and json.loads(response.body[5:])
+        return atterize(response.body and json.loads(response.body[5:]))
 
     def authorize(self):
         self.post('/api/auth', {'name': self.name, 'email': self.email})
@@ -87,24 +87,37 @@ class UnitTest(unittest.TestCase):
 
     def test_verification_handler(self):
         user = self.sign_in()
-        self.assertEqual(user['email'], self.email.lower())
+        self.assertEqual(user.email, self.email.lower())
 
-    # ----- CLASSES -----------------------------------------------------------------
+    # ----- CLASSROOMS -----------------------------------------------------------------
+
+    def create_classroom(self):
+        return self.post('/api/classroom', {'name': self.classroom_name})
+
+    def get_classroom(self, classroom):
+        return self.get('/api/classroom/%s' % classroom.id)
 
     def test_classrooms_handler(self):
         self.sign_in()
         classrooms = self.get('/api/classroom')
         self.assertEqual(len(classrooms), 0)
-        classroom = self.post('/api/classroom', {'name': '7th grade math'})
-        self.assertEqual(classroom['name'], '7th grade math')
+        classroom = self.create_classroom()
+        self.assertEqual(classroom.name, self.classroom_name)
         classrooms = self.get('/api/classroom')
         self.assertEqual(len(classrooms), 1)
-        self.assertEqual(classrooms[0]['name'], '7th grade math')
-
-    def test_classroom_handler(self):
-        self.sign_in()
-        classroom = self.post('/api/classroom', {'name': 'Phoenix'})
-        self.assertIsNotNone(classroom['id'])
-        classroom = self.get('/api/classroom/%s' % classroom['id'])
+        self.assertEqual(classrooms[0].name, self.classroom_name)
+        classroom = self.get_classroom(classroom)
         self.assertIsNotNone(classroom)
+        self.assertEqual(classroom.students, [])
+        self.assertEqual(classroom.assignments, [])
 
+    # ----- STUDENTS -----------------------------------------------------------------
+
+    def test_student_handler(self):
+        self.sign_in()
+        classroom = self.create_classroom()
+        student = self.post('/api/student', {'name': self.student_name, 'classroom_id': classroom.id})
+        self.assertIsNotNone(student)
+        self.assertEqual(student.name, self.student_name)
+        classroom = self.get_classroom(classroom)
+        self.assertEqual(classroom.students[0].name, self.student_name)
