@@ -79,12 +79,20 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 
 // ===== SCHOOL ======================================================================
 
-graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
-  function ($scope, Classroom, Student) {
+graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Student',
+  function ($scope, $http, Classroom, Student) {
     $scope.show = {
       classrooms: false,
       classroom: false,
       addStudent: false
+    };
+
+    $scope.collectNames = function (students) {
+      var names = [];
+      angular.forEach(students, function (student) {
+        names.push(student != null ? student.name : '');
+      });
+      return names;
     };
 
     $scope.selectedIf = function (bool) {
@@ -106,8 +114,6 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
       $scope.createClassroom.inProgress = true;
       new Classroom({name: $scope.createClassroom.name}).$save(
         function (classroom) {
-          console.log("Classroom created!");
-          console.log(classroom);
           $scope.classrooms.push(classroom);
           $scope.createClassroom.inProgress = false;
           $scope.createClassroom.name = null;
@@ -124,7 +130,6 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
     };
 
     $scope.displayClassroom = function (classroom) {
-      console.log('Get classroom: ' + classroom.id);
       classroom.$get({ id: classroom.id });
       $scope.classroom = classroom;
       $scope.show.classroom = true;
@@ -146,16 +151,20 @@ graderControllers.controller('SchoolCtrl', ['$scope', 'Classroom', 'Student',
         $scope.addStudent.name = null;
         $scope.show.addStudent = false;
         $scope.addStudent.inProgress = false;
+        students = null; // expire type-ahead cache
       }, function (response) {
-        console.log(response);
         $scope.addStudent.error = response.data;
         $scope.addStudent.inProgress = false;
       });
     };
 
-    $scope.getStudentsByName = function (val) {
-      return Student.find({name: val, classroom_id: $scope.classroom.id})
-    };
+    var students = null;
+    $scope.students = function() {
+      if (!students) {
+        students = Student.query();
+      }
+      return students;
+    }
 
   }
 ]);

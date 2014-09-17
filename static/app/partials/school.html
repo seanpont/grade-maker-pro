@@ -42,14 +42,16 @@
       </td>
       <td class="form-container">
         <span ng-hide="show.addStudent" ng-click="show.addStudent=true" class="add-student">+ Add Student</span>
+
         <form ng-show="show.addStudent" ng-submit="addStudent.submit()" class="form-inline" role="form">
           <div class="form-group">
             <input ng-model="addStudent.name"
-                   typeahead="name for name in getStudentsByName($viewValue)"
+                   typeahead="name for name in collectNames(students()) | filter:$viewValue"
                    class="form-control">
             <input type="submit" ng-disabled="addStudent.inProgress" class="btn btn-primary" value="Create">
             <button type="reset" ng-click="show.addStudent = false; addStudent.error=null;"
-                    class="btn btn-warning">Cancel</button>
+                    class="btn btn-warning">Cancel
+            </button>
             <span class="error">{{ addStudent.error }}</span>
           </div>
         </form>

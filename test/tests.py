@@ -55,6 +55,16 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(1, len(messages))
         self.assertEqual('%s <%s>' % (self.name, self.email), messages[0].to)
 
+    def test_model_student(self):
+        teacher = models.Teacher.upsert(self.name, self.email)
+        models.Classroom.create(self.classroom_name, teacher)
+        school_key = teacher.key.parent()
+        models.Student.upsert(school_key, "Donald Knuth")
+        models.Student.upsert(school_key, "Claude E. Shannon")
+        models.Student.upsert(school_key, "Edsger Dijkstra")
+        models.Student.upsert(school_key, "donald knuth")
+        self.assertEqual(len(models.Student.query().fetch()), 3)
+
     # ===== HANDLERS ===============================================================
 
     def get(self, path):
@@ -72,7 +82,7 @@ class UnitTest(unittest.TestCase):
 
     def sign_in(self):
         self.authorize()
-        token = views.timestamper.sign(self.email)
+        token = views.encode_email_token(self.email)
         return self.post('/api/auth/verify', {'token': token})
 
     # ----- AUTH -----------------------------------------------------------------

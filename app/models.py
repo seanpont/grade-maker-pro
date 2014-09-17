@@ -25,7 +25,6 @@ School = 'School'
 class Student(ndb.Model):
     # parent = School
     name = ndb.StringProperty(required=True)
-    email = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
@@ -38,7 +37,7 @@ class Student(ndb.Model):
     def upsert(cls, school_key, name):
         student = cls.name_to_key(school_key, name).get()
         if not student:
-            student = Student(parent=school_key, name=name).put().get()
+            student = Student(parent=school_key, id=name.lower(), name=name).put().get()
         return student
 
 
@@ -64,6 +63,8 @@ class Classroom(ndb.Model):
         if not student.key in classroom.students:
             classroom.students.append(student.key)
             classroom.put()
+            return True
+        return False
 
 
 class ClassroomAccess(ndb.Model):

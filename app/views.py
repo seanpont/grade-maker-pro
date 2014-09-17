@@ -13,6 +13,7 @@ import datetime
 import json
 import urllib
 from string import Template
+import base64
 from functools import wraps
 from collections import defaultdict, Iterable
 
@@ -114,6 +115,14 @@ The GradeMaker Pro Team
 """).substitute(name=name, email=email, url=url, token=token))
 
 
+def encode_email_token(email):
+    return base64.urlsafe_b64encode(timestamper.sign(email))
+
+
+def decode_email_token(token):
+    return timestamper.unsign(base64.urlsafe_b64decode(str(token)), max_age=60*30)
+
+
 @route('/api/auth')
 class AuthHandler(BaseHandler):
 
@@ -128,7 +137,7 @@ class AuthHandler(BaseHandler):
         else:
             self.check(name, 400, 'name required')
             models.Teacher.upsert(name, email)
-        token = timestamper.sign(email)
+        token = encode_email_token(email)
         send_welcome_email(name, email, self.request.url, token)
         self.response.set_cookie('verify', 'true')
 
@@ -142,7 +151,7 @@ class AuthHandler(BaseHandler):
             return
         self.check(token, 400, "auth token required")
         try:
-            email = timestamper.unsign(token, max_age=60*30)
+            email = decode_email_token(token)
             self.user = models.Teacher.get_by_email(email)
             self.check(self.user)
             self.session['user_key'] = self.user.key.urlsafe()
@@ -222,6 +231,13 @@ class ClassroomHandler(AuthorizedHandler):
 
 @route('/api/student/?')
 class StudentHandler(AuthorizedHandler):
+
+    def get(self):
+        """ Returns all the students in the school """
+        students = models.Student.query(ancestor=self.school_key).fetch()
+        self.write(students)
+
+
     def post(self):
         """
         Requires a name and a classroom id.
@@ -233,7 +249,8 @@ class StudentHandler(AuthorizedHandler):
         """
         name, classroom_id = self.datum('name', 'classroom_id')
         student = models.Student.upsert(self.school_key, name)
-        models.Classroom.assign_student(self.school_key, classroom_id, student)
+        success = models.Classroom.assign_student(self.school_key, classroom_id, student)
+        self.check(success, 406, "Student already in classroom")
         self.write(student)
 
 
