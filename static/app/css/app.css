@@ -123,3 +123,13 @@ div.spacer {
     padding: 7px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+#addAssignmentForm {
+    width: 220px;
+}
+#addAssignmentForm input {
+    margin-bottom: 3px;
+}

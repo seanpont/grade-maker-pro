@@ -79,12 +79,13 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 
 // ===== SCHOOL ======================================================================
 
-graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Student',
-  function ($scope, $http, Classroom, Student) {
+graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Student', 'Assignment',
+  function ($scope, $http, Classroom, Student, Assignment) {
     $scope.show = {
       classrooms: false,
       classroom: false,
-      addStudent: false
+      addStudent: false,
+      addAssignment: false
     };
 
     $scope.collectNames = function (students) {
@@ -164,6 +165,28 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
         students = Student.query();
       }
       return students;
+    };
+
+    $scope.addAssignment = {};
+    $scope.addAssignment.submit = function() {
+      var classroom = $scope.classroom;
+      if (!$scope.addAssignment.name || !$scope.addAssignment.due_date || !$scope.addAssignment.points) {
+        $scope.addAssignment.error = "Please include a name, due date, and total points";
+        return;
+      }
+      $scope.addAssignment.inProgress = true;
+      Assignment.save({
+        name: $scope.addAssignment.name,
+        due_date: $scope.addAssignment.due_date,
+        points: $scope.addAssignment.points,
+        classroom_id: classroom.id
+      }, function(assignment) {
+        classroom.assignments.push(assignment);
+        $scope.addAssignment.inProgress = false;
+      }, function(response) {
+        $scope.addAssignment.error = response.data;
+        $scope.addAssignment.inProgress = false;
+      });
     }
 
   }
