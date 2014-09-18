@@ -66,20 +66,20 @@
       </td>
     </tr>
     <tr ng-hide="show.addAssignment">
-      <td ng-click="show.addAssignment=true" colspan="3" class="clickable">+ Add Assignment</td>
+      <td colspan="3" ng-click="show.addAssignment=true" class="clickable">+ Add Assignment</td>
     </tr>
     <tr ng-show="show.addAssignment">
-      <td>
+      <td colspan="3">
         <form role="form" ng-submit="addAssignment.submit()" id="addAssignmentForm">
           <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null"
                  type="name" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
-          <input ng-model="addAssignment.due_date" ng-focus="addAssignment.error=null"
+          <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null"
                  type="date" class="form-control" placeholder="Due Date">
           <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null"
                  type="number" class="form-control" placeholder="Total points">
 
           <div class="full-width">
-            <button type="submit" ng-click="addAssignment.submit()" class="btn btn-success half-width pull-left">+ Add</button>
+            <button type="submit" class="btn btn-success half-width pull-left">+ Add</button>
             <button type="reset" ng-click="show.addAssignment=false; addAssignment.error = null;"
                     class="btn btn-warning half-width pull-right">Cancel
             </button>

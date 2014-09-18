@@ -127,9 +127,6 @@ div.spacer {
     cursor: pointer;
 }
 
-#addAssignmentForm {
-    width: 220px;
-}
 #addAssignmentForm input {
     margin-bottom: 3px;
 }

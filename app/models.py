@@ -6,6 +6,7 @@ App Engine datastore models
 """
 
 from google.appengine.ext import ndb
+from datetime import datetime
 
 
 def to_dict(model):
@@ -20,6 +21,10 @@ def domain_of(email):
 
 
 School = 'School'
+
+
+def parse_date(date_str):
+    return datetime.strptime(date_str, '%Y-%m-%d')
 
 
 class Student(ndb.Model):
@@ -47,6 +52,10 @@ class Classroom(ndb.Model):
     students = ndb.KeyProperty(kind=Student, repeated=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
+
+    @classmethod
+    def by_id(cls, school_key, classroom_id):
+        return cls.get_by_id(int(classroom_id), parent=school_key)
 
     @classmethod
     @ndb.transactional()
@@ -111,10 +120,23 @@ class Grade(ndb.Model):
 class Assignment(ndb.Model):
     # parent = Classroom
     name = ndb.StringProperty(required=True)
-    total_points = ndb.IntegerProperty(required=True)
+    due_date = ndb.DateProperty(required=True)
+    points = ndb.IntegerProperty(required=True)
     grades = ndb.StructuredProperty(Grade, repeated=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
+
+    def to_dict(self):
+        d = super(Assignment, self).to_dict()
+        d['grades'] = {g.student_key.id(): g.points for g in self.grades}
+        return d
+
+    @classmethod
+    def create(cls, classroom, name, due_date, points):
+        return Assignment(parent=classroom.key,
+                          name=name,
+                          due_date=parse_date(due_date),
+                          points=int(points)).put().get()
 
 
 def perform_migrations():

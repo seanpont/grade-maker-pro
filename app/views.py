@@ -9,7 +9,7 @@ For example the *say_hello* handler, handling the URL route '/hello/<username>',
   must be passed *username* as the argument.
 
 """
-import datetime
+from datetime import date, datetime
 import json
 import urllib
 from string import Template
@@ -37,13 +37,12 @@ import models
 from utils import *
 
 
-datetime_handler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+datetime_handler = lambda obj: obj.isoformat() if isinstance(obj, datetime) or isinstance(obj, date) else None
 
 timestamper = TimestampSigner(TIMESTAMP_SIGNER_KEY)
 
 
 class BaseHandler(webapp2.RequestHandler):
-
     # noinspection PyAttributeOutsideInit
     def initialize(self, request, response):
         super(BaseHandler, self).initialize(request, response)
@@ -120,12 +119,11 @@ def encode_email_token(email):
 
 
 def decode_email_token(token):
-    return timestamper.unsign(base64.urlsafe_b64decode(str(token)), max_age=60*30)
+    return timestamper.unsign(base64.urlsafe_b64decode(str(token)), max_age=60 * 30)
 
 
 @route('/api/auth')
 class AuthHandler(BaseHandler):
-
     def post(self):
         self.check(not self.user, 400, "user already signed in!")
         name, email = self.datum('name', 'email')
@@ -200,7 +198,9 @@ class SignOut(BaseHandler):
     def post(self):
         self.session.terminate()
 
+
 # ===== CLASSROOM ===============================================================
+
 
 @route('/api/classroom/?')
 class ClassroomsHandler(AuthorizedHandler):
@@ -217,7 +217,7 @@ class ClassroomsHandler(AuthorizedHandler):
 @route('/api/classroom/(\d+)/?')
 class ClassroomHandler(AuthorizedHandler):
     def get(self, classroom_id):
-        classroom = models.Classroom.get_by_id(int(classroom_id), parent=self.school_key)
+        classroom = models.Classroom.by_id(self.school_key, classroom_id)
         self.check(classroom, 404)
         students = ndb.get_multi(classroom.students)
         assignments = models.Assignment.query(ancestor=classroom.key)
@@ -231,12 +231,10 @@ class ClassroomHandler(AuthorizedHandler):
 
 @route('/api/student/?')
 class StudentHandler(AuthorizedHandler):
-
     def get(self):
         """ Returns all the students in the school """
         students = models.Student.query(ancestor=self.school_key).fetch()
         self.write(students)
-
 
     def post(self):
         """
@@ -252,6 +250,21 @@ class StudentHandler(AuthorizedHandler):
         success = models.Classroom.assign_student(self.school_key, classroom_id, student)
         self.check(success, 406, "Student already in classroom")
         self.write(student)
+
+
+# ===== ASSIGNMENT ===============================================================
+
+@route('/api/assignment/?')
+class AssignmentHandler(AuthorizedHandler):
+    def post(self):
+        name, due_date, points, classroom_id = self.datum('name', 'due_date', 'points', 'classroom_id')
+        self.check(name and due_date and points and classroom_id,
+                   message='name, due_date, points, and classroom_id required')
+        classroom = models.Classroom.by_id(self.school_key, classroom_id)
+        self.check(classroom, 404, "Classroom not found")
+        assignment = models.Assignment.create(classroom, name, due_date, points)
+        self.write(assignment)
+
 
 
 # ===== ADMIN ========================================================

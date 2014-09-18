@@ -102,9 +102,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
 
     // ----- CLASSROOMS --------------------------------------------------------------
 
-    $scope.classrooms = Classroom.query(function () {
-      console.log($scope.classrooms);
-    });
+    $scope.classrooms = Classroom.query();
 
     $scope.createClassroom = {};
     $scope.createClassroom.create = function () {
@@ -122,8 +120,6 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
           $scope.show.createClassroom = false;
         },
         function (response) {
-          console.log("Could not create classroom");
-          console.log(response);
           $scope.createClassroom.inProgress = false;
           $scope.createClassroom.error = response.data;
         }
@@ -170,18 +166,21 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     $scope.addAssignment = {};
     $scope.addAssignment.submit = function() {
       var classroom = $scope.classroom;
-      if (!$scope.addAssignment.name || !$scope.addAssignment.due_date || !$scope.addAssignment.points) {
+      if (!$scope.addAssignment.name || !$scope.addAssignment.dueDate || !$scope.addAssignment.points) {
         $scope.addAssignment.error = "Please include a name, due date, and total points";
         return;
       }
       $scope.addAssignment.inProgress = true;
       Assignment.save({
         name: $scope.addAssignment.name,
-        due_date: $scope.addAssignment.due_date,
+        due_date: $scope.addAssignment.dueDate,
         points: $scope.addAssignment.points,
         classroom_id: classroom.id
       }, function(assignment) {
         classroom.assignments.push(assignment);
+        $scope.addAssignment.name = null;
+        $scope.addAssignment.dueDate = null;
+        $scope.addAssignment.points = null;
         $scope.addAssignment.inProgress = false;
       }, function(response) {
         $scope.addAssignment.error = response.data;

@@ -12,12 +12,10 @@ from lib import router
 import mock
 import json
 from app.utils import atterize
+from datetime import date
 
 
 class UnitTest(unittest.TestCase):
-
-
-
     # noinspection PyMethodOverriding
     def setUp(self):
         # Testbed stubs
@@ -64,6 +62,17 @@ class UnitTest(unittest.TestCase):
         models.Student.upsert(school_key, "Edsger Dijkstra")
         models.Student.upsert(school_key, "donald knuth")
         self.assertEqual(len(models.Student.query().fetch()), 3)
+
+    def test_model_assignment(self):
+        teacher = models.Teacher.upsert(self.name, self.email)
+        classroom = models.Classroom.create(self.classroom_name, teacher)
+        assignment = models.Assignment.create(classroom, 'quiz', '2014-09-18', 20)
+        self.assertIsNotNone(assignment)
+        self.assertEqual(assignment.due_date, date(2014, 9, 18))
+        d = assignment.to_dict()
+        self.assertEqual(d['grades'], {})
+        assignments = models.Assignment.query(ancestor=classroom.key).fetch()
+        self.assertEqual(len(assignments), 1)
 
     # ===== HANDLERS ===============================================================
 
@@ -131,3 +140,20 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(student.name, self.student_name)
         classroom = self.get_classroom(classroom)
         self.assertEqual(classroom.students[0].name, self.student_name)
+
+    # ----- ASSIGNMENTS -----------------------------------------------------------------
+
+    def test_assignment_handler(self):
+        self.sign_in()
+        classroom = self.create_classroom()
+        assignment = self.post('/api/assignment', {
+            'classroom_id': classroom.id,
+            'name': 'quiz',
+            'due_date': '2014-09-15',
+            'points': 20
+        })
+        self.assertIsNotNone(assignment)
+        self.assertEqual(assignment.due_date, '2014-09-15')
+        classroom = self.get_classroom(classroom)
+        self.assertEqual(len(classroom.assignments), 1)
+
