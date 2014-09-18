@@ -156,7 +156,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     };
 
     var students = null;
-    $scope.students = function() {
+    $scope.students = function () {
       if (!students) {
         students = Student.query();
       }
@@ -164,27 +164,37 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     };
 
     $scope.addAssignment = {};
-    $scope.addAssignment.submit = function() {
+    $scope.addAssignment.submit = function () {
       var classroom = $scope.classroom;
       if (!$scope.addAssignment.name || !$scope.addAssignment.dueDate || !$scope.addAssignment.points) {
         $scope.addAssignment.error = "Please include a name, due date, and total points";
         return;
       }
       $scope.addAssignment.inProgress = true;
-      Assignment.save({
+      var assignment = new Assignment({
         name: $scope.addAssignment.name,
         due_date: $scope.addAssignment.dueDate,
         points: $scope.addAssignment.points,
         classroom_id: classroom.id
-      }, function(assignment) {
+      });
+      assignment.$save(function (assignment) {
         classroom.assignments.push(assignment);
         $scope.addAssignment.name = null;
         $scope.addAssignment.dueDate = null;
         $scope.addAssignment.points = null;
         $scope.addAssignment.inProgress = false;
-      }, function(response) {
+      }, function (response) {
         $scope.addAssignment.error = response.data;
         $scope.addAssignment.inProgress = false;
+      });
+    };
+
+    $scope.updateGrade = function (assignment, student) {
+      Assignment.grade({
+        classroom_id: $scope.classroom.id,
+        assignment_id: assignment.id,
+        student_id: student.id,
+        grade: assignment.grades[student.id]
       });
     }
 

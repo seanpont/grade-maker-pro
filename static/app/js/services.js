@@ -15,13 +15,20 @@ graderServices.factory('Classroom', ['$resource',
   }]);
 
 graderServices.factory('Student', ['$resource',
-  function($resource) {
+  function ($resource) {
     return $resource('/api/student/:id', {id: '@id'});
   }]);
 
 graderServices.factory('Assignment', ['$resource',
-  function($resource) {
-    return $resource('/api/assignment/:id', {id: '@id'});
+  function ($resource) {
+    return $resource('/api/assignment/:id', {id: '@assignment_id'}, {
+      grade: {
+        method: 'POST',
+        url: '/api/assignment/:id',
+        params: {id: '@assignment_id'},
+        data: {classroom_id: '@classroom_id', student_id: '@student_id', grade: '@grade'}
+      }
+    });
   }]);
 
 

@@ -130,3 +130,9 @@ div.spacer {
 #addAssignmentForm input {
     margin-bottom: 3px;
 }
+
+input.input-cell {
+    border: none;
+    outline: none;
+    width: 75px;
+}

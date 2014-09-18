@@ -189,8 +189,23 @@ describe('GraderApp controllers', function () {
       }).respond(assignment);
       $httpBackend.flush();
       expect(scope.classroom.assignments.length).toBe(2);
+    });
 
-    })
+    it('should be able to assign a grade', function() {
+      setupClassroom();
+      var assignment = scope.classroom.assignments[0];
+      var student = scope.classroom.students[0];
+      assignment.grades[student.id] = 97;
+      scope.updateGrade(scope.classroom.assignments[0], scope.classroom.students[0]);
+      $httpBackend.expectPOST('/api/assignment/' + assignment.id, {
+        classroom_id: classroom.id,
+        assignment_id: assignment.id,
+        student_id: student.id,
+        grade: assignment.grades[student.id]
+      }).respond(assignment);
+      $httpBackend.flush();
+    });
+
   })
 
 
