@@ -112,7 +112,7 @@ div.spacer {
     padding: 10px;
     text-transform: uppercase;
     font-weight: normal;
-    min-width: 100px;
+    min-width: 120px;
     white-space: nowrap;
 }
 
@@ -140,3 +140,16 @@ input.input-cell {
     outline: none;
     height: 22px;
 }
+
+.classroom input.name {
+    width: 110px;
+}
+
+.classroom input.due_date {
+    width: 160px;
+}
+
+.classroom input.points {
+    width: 100px;
+}
+

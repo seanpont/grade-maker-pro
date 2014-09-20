@@ -5,32 +5,35 @@
 </div>
 
 <ul class="items">
-  <li ng-repeat="_classroom in classrooms | filter:q"
+  <li ng-repeat="_classroom in classrooms"
       class="{{ selectedIf(_classroom.id == classroom.id) }}"
       ng-click="displayClassroom(_classroom)">
     {{ _classroom.name }}
   </li>
-  <li ng-hide="show.createClassroom" ng-click="show.createClassroom = true">
+  <li ng-hide="createClassroom.show" ng-click="createClassroom.show = true">
     + Add Classroom
   </li>
-  <form ng-show="show.createClassroom" ng-submit="createClassroom.create()" class="form-inline" role="form">
+  <form ng-show="createClassroom.show" ng-submit="createClassroom.create()" class="form-inline" role="form">
     <div class="form-group">
       <input ng-model="createClassroom.name" class="form-control">
       <input type="submit" ng-disabled="createClassroom.inProgress" class="btn btn-primary" value="Create">
-      <button type="reset" ng-click="show.createClassroom = false" class="btn btn-warning">Cancel</button>
+      <button type="reset" ng-click="createClassroom.cancel()" class="btn btn-warning">Cancel</button>
       <span class="error">{{ createClassroom.error }}</span>
     </div>
   </form>
 </ul>
 
-<div class="classroom" ng-show="show.classroom">
+<div class="classroom" ng-show="classroom">
   <table>
     <tr>
-      <td colspan="3">Assignment</td>
-      <td ng-repeat="student in classroom.students | orderBy:'last_name'">
+      <td>Assignments</td>
+      <td colspan="2">
+        <input class="form-control" type="search" ng-model="filter.students" placeholder="Filter Students"/>
+      </td>
+      <td ng-repeat="student in classroom.students | filter:filter.students | orderBy:'last_name'">
         {{ student.name }}
       </td>
-      <td class="nowrap">
+      <td ng-hide="filter.students">
         <input type="text" ng-model="addStudent.name" class="form-control"
                typeahead="name for name in collectNames(students()) | filter:$viewValue"
                style="width: 150px; display: inline-block;">
@@ -40,39 +43,37 @@
       </td>
     </tr>
     <tr>
-      <td>Title</td>
-      <td>Due Date</td>
-      <td> Points</td>
-      <td ng-repeat="student in classroom.students | orderBy:'last_name'" class="nowrap">
-        {{ totalGrade(classroom, student) }}
+      <td style="width: 120px">Title</td>
+      <td style="width: 120px">Due Date</td>
+      <td style="width: 120px"> Points</td>
+      <td ng-repeat="student in classroom.students | filter:filter.students | orderBy:'last_name'">
+        <span>{{ asRatio(gradeFor(classroom, student)) }}</span>
+        <span class="pull-right">{{ asPercent(gradeFor(classroom, student)) }}</span>
       </td>
     </tr>
-    <tr ng-repeat="assignment in classroom.assignments | filter:q">
+    <tr ng-repeat="assignment in classroom.assignments">
       <td>
-        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell">
+        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell name">
       </td>
       <td>
-        <input type="date" ng-model="assignment.due_date" ng-change="updateAssignment(assignment)" class="input-cell">
+        <input type="date" ng-model="assignment.due_date" ng-change="updateAssignment(assignment)" class="input-cell due_date">
       </td>
       <td>
-        <input type="number" ng-model="assignment.points" ng-change="updateAssignment(assignment)" class="input-cell">
+        <input type="number" ng-model="assignment.points" ng-change="updateAssignment(assignment)" class="input-cell points">
       </td>
-      <td ng-repeat="student in classroom.students | orderBy:'last_name'">
+      <td ng-repeat="student in classroom.students | filter:filter.students | orderBy:'last_name'">
         <input type="text" ng-blur="updateAssignment(assignment)" only-num ng-model=" assignment.grades[student.id] " class="input-cell">
       </td>
     </tr>
     <tr>
       <td>
-        <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null"
-               type="text" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
+        <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null" type="text" class="input-cell name" placeholder="Name">
       </td>
       <td>
-        <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null"
-               type="date" class="form-control" placeholder="Due Date">
+        <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null" type="date" class="input-cell due-date" placeholder="Due Date">
       </td>
       <td>
-        <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null"
-               type="number" class="form-control" placeholder="Total points">
+        <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null" type="number" class="input-cell points" placeholder="Points">
       </td>
     </tr>
     <tr>
@@ -80,6 +81,7 @@
         <button type="submit" ng-click="addAssignment.submit()" class="btn btn-default full-width pull-left">
           + Add Assignment
         </button>
+        <div class="error">{{ addAssignment.error }}</div>
       </td>
     </tr>
 
