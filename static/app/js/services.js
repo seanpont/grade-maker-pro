@@ -21,13 +21,8 @@ graderServices.factory('Student', ['$resource',
 
 graderServices.factory('Assignment', ['$resource',
   function ($resource) {
-    return $resource('/api/assignment/:id', {id: '@assignment_id'}, {
-      grade: {
-        method: 'POST',
-        url: '/api/assignment/:id',
-        params: {id: '@assignment_id'},
-        data: {classroom_id: '@classroom_id', student_id: '@student_id', grade: '@grade'}
-      }
+    return $resource('/api/classroom/:classroom_id/assignment/:assignment_id', {
+      classroom_id: '@classroom_id', assignment_id: '@assignment_id'
     });
   }]);
 

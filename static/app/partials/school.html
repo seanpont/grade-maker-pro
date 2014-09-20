@@ -62,7 +62,7 @@
       <td>{{ assignment.due_date }}</td>
       <td>{{ assignment.points }}</td>
       <td ng-repeat="student in classroom.students | filter:q">
-        <input type="text" ng-blur="updateGrade(assignment, student)" only-num
+        <input type="text" ng-blur="updateAssignment(assignment)" only-num
                class="input-cell" ng-model=" assignment.grades[student.id] ">
       </td>
     </tr>

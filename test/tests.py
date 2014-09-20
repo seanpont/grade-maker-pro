@@ -66,7 +66,7 @@ class UnitTest(unittest.TestCase):
     def test_model_assignment(self):
         teacher = models.Teacher.upsert(self.name, self.email)
         classroom = models.Classroom.create(self.classroom_name, teacher)
-        assignment = models.Assignment.create(classroom, 'quiz', '2014-09-18', 20)
+        assignment = models.Assignment.create(classroom, 'quiz', views.parse_date('2014-09-18'), 20)
         self.assertIsNotNone(assignment)
         self.assertEqual(assignment.due_date, date(2014, 9, 18))
         d = assignment.to_dict()
@@ -143,11 +143,10 @@ class UnitTest(unittest.TestCase):
 
     # ----- ASSIGNMENTS -----------------------------------------------------------------
 
-    def test_assignment_handler(self):
+    def test_assignments_handler(self):
         self.sign_in()
         classroom = self.create_classroom()
-        assignment = self.post('/api/assignment', {
-            'classroom_id': classroom.id,
+        assignment = self.post('/api/classroom/%s/assignment' % classroom.id, {
             'name': 'quiz',
             'due_date': '2014-09-15',
             'points': 20
@@ -156,4 +155,9 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(assignment.due_date, '2014-09-15')
         classroom = self.get_classroom(classroom)
         self.assertEqual(len(classroom.assignments), 1)
-
+        student = self.post('/api/student', {'name': self.student_name, 'classroom_id': classroom.id})
+        assignment.grades[student.id] = 18.0
+        # update the assignment -- add a grade
+        updated_assignment = self.post('/api/classroom/%s/assignment/%s' % (classroom.id, assignment.id), assignment)
+        updated_assignment['updated_at'] = assignment.updated_at
+        self.assertEqual(updated_assignment, assignment)

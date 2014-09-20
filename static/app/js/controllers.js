@@ -189,13 +189,8 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       });
     };
 
-    $scope.updateGrade = function (assignment, student) {
-      Assignment.grade({
-        classroom_id: $scope.classroom.id,
-        assignment_id: assignment.id,
-        student_id: student.id,
-        grade: assignment.grades[student.id]
-      });
+    $scope.updateAssignment = function (assignment) {
+      Assignment.save({classroom_id: $scope.classroom.id, assignment_id: assignment.id}, assignment)
     }
 
   }

@@ -42,6 +42,10 @@ datetime_handler = lambda obj: obj.isoformat() if isinstance(obj, datetime) or i
 timestamper = TimestampSigner(TIMESTAMP_SIGNER_KEY)
 
 
+def parse_date(date_str):
+    return datetime.strptime(date_str, '%Y-%m-%d')
+
+
 class BaseHandler(webapp2.RequestHandler):
     # noinspection PyAttributeOutsideInit
     def initialize(self, request, response):
@@ -227,7 +231,39 @@ class ClassroomHandler(AuthorizedHandler):
         self.write(response)
 
 
+# ===== ASSIGNMENT ===============================================================
+
+
+@route('/api/classroom/(\d+)/assignment/?')
+class AssignmentsHandler(AuthorizedHandler):
+    def post(self, classroom_id):
+        name, due_date, points = self.datum('name', 'due_date', 'points')
+        self.check(name and due_date and points, message='name, due_date, and points required')
+        classroom = models.Classroom.by_id(self.school_key, classroom_id)
+        self.check(classroom, 404, "Classroom not found")
+        assignment = models.Assignment.create(classroom, name, parse_date(due_date), int(points))
+        self.write(assignment)
+
+
+@route('/api/classroom/(\d+)/assignment/(\d+)/?')
+class AssignmentHandler(AuthorizedHandler):
+    def post(self, classroom_id, assignment_id):
+        classroom_id, assignment_id = int(classroom_id), int(assignment_id)
+        assignment = models.Assignment.by_id(self.school_key, classroom_id, assignment_id)
+        self.check(assignment, 404)
+        updated_assignment = atterize(self.data())
+        assignment.name = updated_assignment.name
+        assignment.due_date = parse_date(updated_assignment.due_date)
+        assignment.points = int(updated_assignment.points)
+        for student_id in updated_assignment.grades:
+            student_key = models.Student.key_for(self.school_key, student_id)
+            assignment.upsert_grade(student_key, float(updated_assignment.grades[student_id]))
+        assignment.put()
+        self.write(assignment)
+
+
 # ===== STUDENT ===============================================================
+
 
 @route('/api/student/?')
 class StudentHandler(AuthorizedHandler):
@@ -252,18 +288,7 @@ class StudentHandler(AuthorizedHandler):
         self.write(student)
 
 
-# ===== ASSIGNMENT ===============================================================
 
-@route('/api/assignment/?')
-class AssignmentHandler(AuthorizedHandler):
-    def post(self):
-        name, due_date, points, classroom_id = self.datum('name', 'due_date', 'points', 'classroom_id')
-        self.check(name and due_date and points and classroom_id,
-                   message='name, due_date, points, and classroom_id required')
-        classroom = models.Classroom.by_id(self.school_key, classroom_id)
-        self.check(classroom, 404, "Classroom not found")
-        assignment = models.Assignment.create(classroom, name, due_date, points)
-        self.write(assignment)
 
 
 

@@ -181,28 +181,26 @@ describe('GraderApp controllers', function () {
       scope.addAssignment.dueDate = '09/19/2014';
       scope.addAssignment.points = 100;
       scope.addAssignment.submit();
-      $httpBackend.expectPOST('/api/assignment', {
-        name: scope.addAssignment.name,
-        due_date: scope.addAssignment.dueDate,
-        points: scope.addAssignment.points,
-        classroom_id: scope.classroom.id
-      }).respond(assignment);
+      $httpBackend.expectPOST(
+          '/api/classroom/' + scope.classroom.id + '/assignment',
+        {
+          name: scope.addAssignment.name,
+          due_date: scope.addAssignment.dueDate,
+          points: scope.addAssignment.points,
+          classroom_id: scope.classroom.id
+        }).respond(assignment);
       $httpBackend.flush();
       expect(scope.classroom.assignments.length).toBe(2);
     });
 
-    it('should be able to assign a grade', function() {
+    it('should be able to assign a grade', function () {
       setupClassroom();
       var assignment = scope.classroom.assignments[0];
       var student = scope.classroom.students[0];
       assignment.grades[student.id] = 97;
-      scope.updateGrade(scope.classroom.assignments[0], scope.classroom.students[0]);
-      $httpBackend.expectPOST('/api/assignment/' + assignment.id, {
-        classroom_id: classroom.id,
-        assignment_id: assignment.id,
-        student_id: student.id,
-        grade: assignment.grades[student.id]
-      }).respond(assignment);
+      scope.updateAssignment(scope.classroom.assignments[0]);
+      $httpBackend.expectPOST('/api/classroom/' + scope.classroom.id + '/assignment/' + assignment.id,
+        assignment).respond(assignment);
       $httpBackend.flush();
     });
 

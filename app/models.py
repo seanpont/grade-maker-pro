@@ -23,10 +23,6 @@ def domain_of(email):
 School = 'School'
 
 
-def parse_date(date_str):
-    return datetime.strptime(date_str, '%Y-%m-%d')
-
-
 class Student(ndb.Model):
     # parent = School
     name = ndb.StringProperty(required=True)
@@ -34,8 +30,14 @@ class Student(ndb.Model):
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
     @classmethod
+    def key_for(cls, school_key, student_id):
+        """ @:rtype ndb.Key """
+        return ndb.Key(School, school_key.id(), Student, student_id)
+
+    @classmethod
     def name_to_key(cls, school_key, name):
-        return ndb.Key(School, school_key.id(), Student, name.lower())
+        """ @:rtype ndb.Key """
+        return cls.key_for(school_key, name.lower())
 
     @classmethod
     @ndb.transactional()
@@ -131,12 +133,22 @@ class Assignment(ndb.Model):
         d['grades'] = {g.student_key.id(): g.points for g in self.grades}
         return d
 
+    # noinspection PyTypeChecker
+    def upsert_grade(self, student_key, points):
+        for grade in self.grades:
+            if grade.student_key == student_key:
+                grade.points = points
+                return
+        self.grades.append(Grade(student_key=student_key, points=points))
+
+    @classmethod
+    def by_id(cls, school_key, classroom_id, assignment_id):
+        """ @:rtype Assignment """
+        return ndb.Key(School, school_key.id(), Classroom, classroom_id, Assignment, assignment_id).get()
+
     @classmethod
     def create(cls, classroom, name, due_date, points):
-        return Assignment(parent=classroom.key,
-                          name=name,
-                          due_date=parse_date(due_date),
-                          points=int(points)).put().get()
+        return Assignment(parent=classroom.key, name=name, due_date=due_date, points=points).put().get()
 
 
 def perform_migrations():
