@@ -257,7 +257,10 @@ class AssignmentHandler(AuthorizedHandler):
         assignment.points = int(updated_assignment.points)
         for student_id in updated_assignment.grades:
             student_key = models.Student.key_for(self.school_key, student_id)
-            assignment.upsert_grade(student_key, float(updated_assignment.grades[student_id]))
+            if updated_assignment.grades[student_id] == '':
+                assignment.delete_grade(student_key)
+            else:
+                assignment.upsert_grade(student_key, float(updated_assignment.grades[student_id]))
         assignment.put()
         self.write(assignment)
 

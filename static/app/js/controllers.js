@@ -195,12 +195,13 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     $scope.totalGrade = function(classroom, student) {
       var points = 0, total_points = 0;
       angular.forEach(classroom.assignments, function(assignment) {
-        if ((typeof assignment.grades[student.id] !== 'undefined')) {
-          points += parseFloat(assignment.grades[student.id]) || 0;
+        var grade = assignment.grades[student.id];
+        if ((typeof grade !== 'undefined' && grade != '')) {
+          points += parseFloat(assignment.grades[student.id]);
           total_points += assignment.points;
         }
       });
-      return points + ' / ' + total_points + ' : ' + points/(total_points || 1)*100 + '%'
+      return points + ' / ' + total_points + ' : ' + (points/(total_points || 1)*100).toPrecision(3) + '%'
     }
 
 

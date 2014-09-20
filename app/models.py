@@ -7,6 +7,7 @@ App Engine datastore models
 
 from google.appengine.ext import ndb
 from datetime import datetime
+from utils import *
 
 
 def to_dict(model):
@@ -140,6 +141,9 @@ class Assignment(ndb.Model):
                 grade.points = points
                 return
         self.grades.append(Grade(student_key=student_key, points=points))
+
+    def delete_grade(self, student_key):
+        find_and_remove(self.grades, lambda grade: grade.student_key == student_key)
 
     @classmethod
     def by_id(cls, school_key, classroom_id, assignment_id):

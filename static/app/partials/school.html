@@ -44,7 +44,7 @@
         <input type="text" ng-model="addStudent.name" class="form-control"
                typeahead="name for name in collectNames(students()) | filter:$viewValue"
                style="width: 150px; display: inline-block;">
-        <input type="submit" ng-disabled="addStudent.inProgress"  ng-click="addStudent.submit()"  value="+ Add Student"
+        <input type="submit" ng-disabled="addStudent.inProgress" ng-click="addStudent.submit()" value="+ Add Student"
                class="btn btn-default" style="display: inline-block; width: 120px; margin-top: -2px">
         <span class="error">{{ addStudent.error }}</span>
       </td>
@@ -57,36 +57,32 @@
         {{ totalGrade(classroom, student) }}
       </td>
     </tr>
-
-
-
-
     <tr ng-repeat="assignment in classroom.assignments | filter:q">
       <td>
-        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell" >
+        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell">
       </td>
       <td>
         <input type="date" ng-model="assignment.due_date" ng-change="updateAssignment(assignment)" class="input-cell">
       </td>
       <td>
-        <input type="number" ng-model="assignment.points" ng-change="updateAssignment(assignment)" class="input-cell" >
+        <input type="number" ng-model="assignment.points" ng-change="updateAssignment(assignment)" class="input-cell">
       </td>
       <td ng-repeat="student in classroom.students">
-        <input type="text" ng-change="updateAssignment(assignment)" only-num ng-model=" assignment.grades[student.id] " class="input-cell">
+        <input type="text" ng-blur="updateAssignment(assignment)" only-num ng-model=" assignment.grades[student.id] " class="input-cell">
       </td>
     </tr>
     <tr>
       <td>
         <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null"
-                 type="text" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
+               type="text" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
       </td>
       <td>
         <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null"
-                 type="date" class="form-control" placeholder="Due Date">
+               type="date" class="form-control" placeholder="Due Date">
       </td>
       <td>
         <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null"
-                 type="number" class="form-control" placeholder="Total points">
+               type="number" class="form-control" placeholder="Total points">
       </td>
     </tr>
     <tr>

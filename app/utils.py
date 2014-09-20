@@ -20,6 +20,21 @@ class AttrDict(dict):
             return self.get(name)
 
 
+# ===== LIST UTILS ===============================================================
+
+def find(iterable, func):
+    for i in iterable:
+        if func(i):
+            return i
+
+
+def find_and_remove(iterable, func):
+    iterable.remove(find(iterable, func))
+
+
+# ===== TESTS ===============================================================
+
+
 if __name__ == '__main__':
     d = {'a': 1, 'b': {'c': 3, 'd': 4}, 'e': [5, 6, 7], 'f': [{'g': 8}, {'h': 9}]}
     ad = atterize(d)
