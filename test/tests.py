@@ -161,3 +161,5 @@ class UnitTest(unittest.TestCase):
         updated_assignment = self.post('/api/classroom/%s/assignment/%s' % (classroom.id, assignment.id), assignment)
         updated_assignment['updated_at'] = assignment.updated_at
         self.assertEqual(updated_assignment, assignment)
+
+

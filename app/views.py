@@ -224,7 +224,7 @@ class ClassroomHandler(AuthorizedHandler):
         classroom = models.Classroom.by_id(self.school_key, classroom_id)
         self.check(classroom, 404)
         students = ndb.get_multi(classroom.students)
-        assignments = models.Assignment.query(ancestor=classroom.key)
+        assignments = models.Assignment.query(ancestor=classroom.key).order(models.Assignment.due_date)
         response = models.to_dict(classroom)
         response['students'] = [models.to_dict(student) for student in students]
         response['assignments'] = [models.to_dict(assignment) for assignment in assignments]

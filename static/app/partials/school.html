@@ -37,57 +37,65 @@
   <table>
     <tr>
       <td colspan="3">Assignment</td>
-      <td ng-repeat="student in classroom.students | filter:q">
+      <td ng-repeat="student in classroom.students">
         {{ student.name }}
       </td>
-      <td class="form-container">
-        <span ng-hide="show.addStudent" ng-click="show.addStudent=true" class="add-student">+ Add Student</span>
-
-        <form ng-show="show.addStudent" ng-submit="addStudent.submit()" class="form-inline" role="form">
-          <div class="form-group">
-            <input ng-model="addStudent.name"
-                   typeahead="name for name in collectNames(students()) | filter:$viewValue"
-                   class="form-control">
-            <input type="submit" ng-disabled="addStudent.inProgress" class="btn btn-primary" value="Create">
-            <button type="reset" ng-click="show.addStudent = false; addStudent.error=null;"
-                    class="btn btn-warning">Cancel
-            </button>
-            <span class="error">{{ addStudent.error }}</span>
-          </div>
-        </form>
+      <td class="nowrap">
+        <input type="text" ng-model="addStudent.name" class="form-control"
+               typeahead="name for name in collectNames(students()) | filter:$viewValue"
+               style="width: 150px; display: inline-block;">
+        <input type="submit" ng-disabled="addStudent.inProgress"  ng-click="addStudent.submit()"  value="+ Add Student"
+               class="btn btn-default" style="display: inline-block; width: 120px; margin-top: -2px">
+        <span class="error">{{ addStudent.error }}</span>
       </td>
     </tr>
+    <tr>
+      <td>Title</td>
+      <td>Due Date</td>
+      <td> Points</td>
+      <td ng-repeat="student in classroom.students" class="nowrap">
+        {{ totalGrade(classroom, student) }}
+      </td>
+    </tr>
+
+
+
+
     <tr ng-repeat="assignment in classroom.assignments | filter:q">
-      <td>{{ assignment.name }}</td>
-      <td>{{ assignment.due_date }}</td>
-      <td>{{ assignment.points }}</td>
-      <td ng-repeat="student in classroom.students | filter:q">
-        <input type="text" ng-blur="updateAssignment(assignment)" only-num
-               class="input-cell" ng-model=" assignment.grades[student.id] ">
+      <td>
+        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell" >
+      </td>
+      <td>
+        <input type="date" ng-model="assignment.due_date" ng-change="updateAssignment(assignment)" class="input-cell">
+      </td>
+      <td>
+        <input type="number" ng-model="assignment.points" ng-change="updateAssignment(assignment)" class="input-cell" >
+      </td>
+      <td ng-repeat="student in classroom.students">
+        <input type="text" ng-change="updateAssignment(assignment)" only-num ng-model=" assignment.grades[student.id] " class="input-cell">
       </td>
     </tr>
-    <tr ng-hide="show.addAssignment">
-      <td colspan="3" ng-click="show.addAssignment=true" class="clickable">+ Add Assignment</td>
-    </tr>
-    <tr ng-show="show.addAssignment">
-      <td colspan="3">
-        <form role="form" ng-submit="addAssignment.submit()" id="addAssignmentForm">
-          <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null"
-                 type="name" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
-          <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null"
+    <tr>
+      <td>
+        <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null"
+                 type="text" class="form-control" placeholder="name (ie. &quot;Quiz 2&quot;)">
+      </td>
+      <td>
+        <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null"
                  type="date" class="form-control" placeholder="Due Date">
-          <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null"
+      </td>
+      <td>
+        <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null"
                  type="number" class="form-control" placeholder="Total points">
-
-          <div class="full-width">
-            <button type="submit" class="btn btn-success half-width pull-left">+ Add</button>
-            <button type="reset" ng-click="show.addAssignment=false; addAssignment.error = null;"
-                    class="btn btn-warning half-width pull-right">Cancel
-            </button>
-          </div>
-          <div class="error">{{addAssignment.error}}</div>
-        </form>
       </td>
     </tr>
+    <tr>
+      <td colspan="3">
+        <button type="submit" ng-click="addAssignment.submit()" class="btn btn-default full-width pull-left">
+          + Add Assignment
+        </button>
+      </td>
+    </tr>
+
   </table>
 </div>

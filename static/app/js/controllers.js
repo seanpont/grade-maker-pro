@@ -146,7 +146,6 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       }, function (student) {
         $scope.classroom.students.push(student);
         $scope.addStudent.name = null;
-        $scope.show.addStudent = false;
         $scope.addStudent.inProgress = false;
         students = null; // expire type-ahead cache
       }, function (response) {
@@ -191,7 +190,20 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
 
     $scope.updateAssignment = function (assignment) {
       Assignment.save({classroom_id: $scope.classroom.id, assignment_id: assignment.id}, assignment)
+    };
+
+    $scope.totalGrade = function(classroom, student) {
+      var points = 0, total_points = 0;
+      angular.forEach(classroom.assignments, function(assignment) {
+        if ((typeof assignment.grades[student.id] !== 'undefined')) {
+          points += parseFloat(assignment.grades[student.id]) || 0;
+          total_points += assignment.points;
+        }
+      });
+      return points + ' / ' + total_points + ' : ' + points/(total_points || 1)*100 + '%'
     }
+
+
 
   }
 ]);

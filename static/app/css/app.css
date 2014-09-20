@@ -112,6 +112,8 @@ div.spacer {
     padding: 10px;
     text-transform: uppercase;
     font-weight: normal;
+    min-width: 100px;
+    white-space: nowrap;
 }
 
 .classroom td.form-container {
@@ -132,7 +134,9 @@ div.spacer {
 }
 
 input.input-cell {
+    display: inline;
+    width: 100%;
     border: none;
     outline: none;
-    width: 75px;
+    height: 22px;
 }
