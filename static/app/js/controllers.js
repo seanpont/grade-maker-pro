@@ -82,7 +82,6 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Student', 'Assignment',
   function ($scope, $http, Classroom, Student, Assignment) {
     $scope.show = {
-      classrooms: false,
       classroom: false,
       addStudent: false,
       addAssignment: false

@@ -30,6 +30,13 @@ class Student(ndb.Model):
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
+    # noinspection PyUnresolvedReferences
+    def to_dict(self):
+        student = super(Student, self).to_dict()
+        name_parts = self.name.split(' ')
+        student['last_name'] = name_parts[min(len(name_parts), 1)]
+        return student
+
     @classmethod
     def key_for(cls, school_key, student_id):
         """ @:rtype ndb.Key """
