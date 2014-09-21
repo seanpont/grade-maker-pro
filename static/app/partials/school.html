@@ -4,7 +4,9 @@
   <input class="form-control" type="search" ng-model="q" placeholder="Search"/>
 </div>
 
-<ul class="items">
+<div class="loading" ng-hide="classroomsLoaded">Loading...</div>
+
+<ul class="items" ng-show="classroomsLoaded">
   <li ng-repeat="_classroom in classrooms"
       class="{{ selectedIf(_classroom.id == classroom.id) }}"
       ng-click="displayClassroom(_classroom)">
@@ -24,9 +26,12 @@
 </ul>
 
 <div class="classroom" ng-show="classroom">
+
+  <h4>Assignments</h4>
+
   <table>
     <tr>
-      <td>Assignments</td>
+      <td colspan="1">Assignments</td>
       <td colspan="2">
         <input class="form-control" type="search" ng-model="filter.students" placeholder="Filter Students"/>
       </td>
@@ -35,6 +40,7 @@
       </td>
       <td ng-hide="filter.students">
         <input type="text" ng-model="addStudent.name" class="form-control"
+               ng-focus="addStudent.error=null"
                typeahead="name for name in collectNames(students()) | filter:$viewValue"
                style="width: 150px; display: inline-block;">
         <input type="submit" ng-disabled="addStudent.inProgress" ng-click="addStudent.submit()" value="+ Add Student"
@@ -43,17 +49,19 @@
       </td>
     </tr>
     <tr>
-      <td style="width: 120px">Title</td>
-      <td style="width: 120px">Due Date</td>
-      <td style="width: 120px"> Points</td>
+      <td>Category</td>
+      <td>Due Date</td>
+      <td>Total Points</td>
       <td ng-repeat="student in classroom.students | filter:filter.students | orderBy:'last_name'">
         <span>{{ asRatio(gradeFor(classroom, student)) }}</span>
         <span class="pull-right">{{ asPercent(gradeFor(classroom, student)) }}</span>
       </td>
     </tr>
-    <tr ng-repeat="assignment in classroom.assignments">
+    <tr ng-repeat="assignment in classroom.assignments | orderBy: 'due_date'">
       <td>
-        <input type="text" ng-model="assignment.name" ng-change="updateAssignment(assignment)" class="input-cell name">
+        <input type="text" ng-model="assignment.category"
+               typeahead="category for category in categories() | filter:$viewValue"
+               ng-change="updateAssignment(assignment)" class="input-cell name">
       </td>
       <td>
         <input type="date" ng-model="assignment.due_date" ng-change="updateAssignment(assignment)" class="input-cell due_date">
@@ -67,17 +75,18 @@
     </tr>
     <tr>
       <td>
-        <input ng-model="addAssignment.name" ng-focus="addAssignment.error=null" type="text" class="input-cell name" placeholder="Name">
+        <input ng-model="addAssignment.category" ng-focus="addAssignment.error=null" type="text" class="input-cell name" placeholder="Homework"
+          typeahead="category for category in categories() | filter:$viewValue">
       </td>
       <td>
         <input ng-model="addAssignment.dueDate" ng-focus="addAssignment.error=null" type="date" class="input-cell due-date" placeholder="Due Date">
       </td>
       <td>
-        <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null" type="number" class="input-cell points" placeholder="Points">
+        <input ng-model="addAssignment.points" ng-focus="addAssignment.error=null" type="number" class="input-cell points" placeholder="20">
       </td>
     </tr>
     <tr>
-      <td colspan="3">
+      <td colspan="3" style="white-space: normal">
         <button type="submit" ng-click="addAssignment.submit()" class="btn btn-default full-width pull-left">
           + Add Assignment
         </button>
@@ -85,5 +94,26 @@
       </td>
     </tr>
 
+  </table>
+
+  <hr>
+  <h4>Grade Weights</h4>
+  <table>
+    <tr>
+      <td>Category</td>
+      <td>Weight</td>
+      <td>Percentage</td>
+    </tr>
+    <tr ng-repeat="category in keys(classroom.grade_weights)">
+      <td>
+        {{ category }}
+      </td>
+      <td>
+        <input type="number" ng-model="classroom.grade_weights[category]" ng-blur="classroom.$save()" class="form-control">
+      </td>
+      <td>
+        {{ categoryWeightPercent(category) }}
+      </td>
+    </tr>
   </table>
 </div>

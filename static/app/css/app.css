@@ -110,7 +110,6 @@ div.spacer {
     -moz-box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
     box-shadow: #f0f0f0 0 0 0 3px inset, #edddf5 2px 3px 0;
     padding: 10px;
-    text-transform: uppercase;
     font-weight: normal;
     min-width: 120px;
     white-space: nowrap;
@@ -145,6 +144,10 @@ input.input-cell {
     width: 110px;
 }
 
+.classroom input.category {
+    width: 110px;
+}
+
 .classroom input.due_date {
     width: 160px;
 }
@@ -153,3 +156,6 @@ input.input-cell {
     width: 100px;
 }
 
+.classroom h4 {
+    padding-left: 10px;
+}

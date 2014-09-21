@@ -143,14 +143,17 @@ class UnitTest(unittest.TestCase):
 
     # ----- ASSIGNMENTS -----------------------------------------------------------------
 
+    def create_assignment(self, classroom, category='Quiz', due_date='2014-09-15', points=20):
+        return self.post('/api/classroom/%s/assignment' % classroom.id, {
+            'category': category,
+            'due_date': due_date,
+            'points': points
+        })
+
     def test_assignments_handler(self):
         self.sign_in()
         classroom = self.create_classroom()
-        assignment = self.post('/api/classroom/%s/assignment' % classroom.id, {
-            'name': 'quiz',
-            'due_date': '2014-09-15',
-            'points': 20
-        })
+        assignment = self.create_assignment(classroom, 'Quiz', '2014-09-15', 20)
         self.assertIsNotNone(assignment)
         self.assertEqual(assignment.due_date, '2014-09-15')
         classroom = self.get_classroom(classroom)
@@ -162,4 +165,19 @@ class UnitTest(unittest.TestCase):
         updated_assignment['updated_at'] = assignment.updated_at
         self.assertEqual(updated_assignment, assignment)
 
-
+    def test_assignment_weights(self):
+        self.sign_in()
+        classroom = self.create_classroom()
+        self.create_assignment(classroom, category='Quiz')
+        self.create_assignment(classroom, category='Homework')
+        self.create_assignment(classroom, category='Test')
+        self.create_assignment(classroom, category='quiz')
+        classroom = self.get_classroom(classroom)
+        print classroom
+        self.assertEqual(len(classroom.grade_weights), 3)
+        expected = {
+            'quiz': 100,
+            'homework': 100,
+            'test': 100
+        }
+        self.assertEqual(classroom.grade_weights, expected)

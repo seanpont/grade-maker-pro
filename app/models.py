@@ -6,15 +6,15 @@ App Engine datastore models
 """
 
 from google.appengine.ext import ndb
-from datetime import datetime
+
 from utils import *
 
 
 def to_dict(model):
     assert isinstance(model, ndb.Model)
-    d = model.to_dict()
-    d['id'] = model.key.id()
-    return d
+    model_dict = model.to_dict()
+    model_dict['id'] = model.key.id()
+    return model_dict
 
 
 def domain_of(email):
@@ -56,12 +56,30 @@ class Student(ndb.Model):
         return student
 
 
+class GradeWeight(ndb.Model):
+    category = ndb.StringProperty(required=True)
+    weight = ndb.IntegerProperty(required=True, default=100)
+
+
 class Classroom(ndb.Model):
     # parent = School
     name = ndb.StringProperty(required=True)
     students = ndb.KeyProperty(kind=Student, repeated=True)
+    grade_weights = ndb.StructuredProperty(GradeWeight, repeated=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
+
+    def to_dict(self):
+        classroom = super(Classroom, self).to_dict()
+        classroom['grade_weights'] = {gw.category: gw.weight for gw in self.grade_weights} or {}
+        return classroom
+
+    def upsert_grade_weight(self, category):
+        category = category.lower()
+        if category not in [gw.category for gw in self.grade_weights]:
+            self.grade_weights.append(GradeWeight(category=category))
+            self.put()
+
 
     @classmethod
     def by_id(cls, school_key, classroom_id):
@@ -129,7 +147,7 @@ class Grade(ndb.Model):
 
 class Assignment(ndb.Model):
     # parent = Classroom
-    name = ndb.StringProperty(required=True)
+    category = ndb.StringProperty(required=True)
     due_date = ndb.DateProperty(required=True)
     points = ndb.IntegerProperty(required=True)
     grades = ndb.StructuredProperty(Grade, repeated=True)
@@ -137,9 +155,9 @@ class Assignment(ndb.Model):
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
     def to_dict(self):
-        d = super(Assignment, self).to_dict()
-        d['grades'] = {g.student_key.id(): g.points for g in self.grades}
-        return d
+        assignment = super(Assignment, self).to_dict()
+        assignment['grades'] = {grade.student_key.id(): grade.points for grade in self.grades}
+        return assignment
 
     # noinspection PyTypeChecker
     def upsert_grade(self, student_key, points):
@@ -158,8 +176,9 @@ class Assignment(ndb.Model):
         return ndb.Key(School, school_key.id(), Classroom, classroom_id, Assignment, assignment_id).get()
 
     @classmethod
-    def create(cls, classroom, name, due_date, points):
-        return Assignment(parent=classroom.key, name=name, due_date=due_date, points=points).put().get()
+    def create(cls, classroom, category, due_date, points):
+        return Assignment(parent=classroom.key, category=category, due_date=due_date,
+                          points=points).put().get()
 
 
 def perform_migrations():

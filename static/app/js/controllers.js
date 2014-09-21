@@ -100,11 +100,9 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
 
     // ----- CLASSROOMS --------------------------------------------------------------
 
-    $scope.classrooms = {};
-    Classroom.query(function(classrooms) {
-      angular.forEach(classrooms, function(classroom) {
-        $scope.classrooms[classroom.id] = classroom
-      })
+    Classroom.query(function (classrooms) {
+      $scope.classrooms = classrooms;
+      $scope.classroomsLoaded = true;
     });
 
     $scope.createClassroom = {};
@@ -117,8 +115,9 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       $scope.createClassroom.inProgress = true;
       new Classroom({name: $scope.createClassroom.name}).$save(
         function (classroom) {
-          $scope.classrooms[classroom.id] = classroom;
+          $scope.classrooms.push(classroom);
           $scope.createClassroom.cancel();
+          $scope.displayClassroom(classroom);
         },
         function (response) {
           $scope.createClassroom.inProgress = false;
@@ -126,7 +125,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
         }
       );
     };
-    $scope.createClassroom.cancel = function() {
+    $scope.createClassroom.cancel = function () {
       $scope.createClassroom.show = false;
       $scope.createClassroom.name = null;
       $scope.createClassroom.inProgress = false;
@@ -135,7 +134,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
 
     $scope.displayClassroom = function (classroom) {
       if (!classroom.loaded) {
-        classroom.$get({ id: classroom.id }, function(classroom) {
+        classroom.$get({ id: classroom.id }, function (classroom) {
           classroom.loaded = true;
           $scope.classroom = classroom;
         });
@@ -177,21 +176,24 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     $scope.addAssignment = {};
     $scope.addAssignment.submit = function () {
       var classroom = $scope.classroom;
-      if (!$scope.addAssignment.name || !$scope.addAssignment.dueDate || !$scope.addAssignment.points) {
-        $scope.addAssignment.error = "Please include a name, due date, and total points";
+      if (!$scope.addAssignment.category || !$scope.addAssignment.dueDate || !$scope.addAssignment.points) {
+        $scope.addAssignment.error = "Please include a category, due date, and total points";
         return;
       }
       $scope.addAssignment.inProgress = true;
       var assignment = new Assignment({
-        name: $scope.addAssignment.name,
+        category: $scope.addAssignment.category,
         due_date: $scope.addAssignment.dueDate,
         points: $scope.addAssignment.points,
         classroom_id: classroom.id
       });
       assignment.$save(function (assignment) {
         classroom.assignments.push(assignment);
-        $scope.addAssignment.name = null;
-        $scope.addAssignment.dueDate = null;
+        if (! classroom.grade_weights[assignment.category.toLowerCase()]) {
+          classroom.grade_weights[assignment.category.toLowerCase()] = 100;
+        }
+        $scope.addAssignment.category = null;
+        $scope.addAssignment.dueDate = new Date();
         $scope.addAssignment.points = null;
         $scope.addAssignment.inProgress = false;
       }, function (response) {
@@ -204,9 +206,9 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       Assignment.save({classroom_id: $scope.classroom.id, assignment_id: assignment.id}, assignment)
     };
 
-    $scope.gradeFor = function(classroom, student) {
+    $scope.gradeFor = function (classroom, student) {
       var points = [0, 0];
-      classroom.assignments.forEach(function(assignment) {
+      classroom.assignments.forEach(function (assignment) {
         var grade = assignment.grades[student.id];
         if ((typeof grade !== 'undefined' && grade != '')) {
           points[0] += parseFloat(grade);
@@ -216,14 +218,37 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       return points;
     };
 
-    $scope.asRatio = function(grade) {
+    $scope.asRatio = function (grade) {
       return grade[0] + ' / ' + grade[1]
     };
 
-    $scope.asPercent = function(grade) {
-      return (grade[0]*100/(grade[1] || 1)).toPrecision(3) + '%'
-    }
+    $scope.asPercent = function (grade) {
+      return (grade[0] * 100 / (grade[1] || 1)).toPrecision(3) + '%'
+    };
 
+    $scope.categories = function() {
+      var categories = [];
+      angular.forEach($scope.classrooms, function(classroom) {
+        categories = categories.concat(Object.keys(classroom.grade_weights));
+      });
+      return categories;
+    };
+
+    var sum = function(items) {
+      var s = 0;
+      angular.forEach(items, function(item) { s += item })
+      return s;
+    };
+
+    $scope.categoryWeightPercent = function(category) {
+      var weight = $scope.classroom.grade_weights[category];
+      var total = sum($scope.classroom.grade_weights);
+      return $scope.asPercent([weight, total])
+    };
+
+    $scope.keys = function(obj) {
+      return obj ? Object.keys(obj) : '';
+    };
 
 
   }

@@ -135,8 +135,9 @@ describe('GraderApp controllers', function () {
       $httpBackend.expectGET('/api/classroom/' + classroom.id).respond(inflatedClassroom);
       scope.displayClassroom(scope.classrooms[0]);
       $httpBackend.flush();
-      expect(scope.classroom).toEqualData(inflatedClassroom);
-      expect(scope.show.classroom).toBe(true);
+      expect(scope.classroom).toBeDefined();
+      expect(scope.classroom.students.length).toBe(2);
+      expect(scope.classroom.loaded).toBe(true);
       var assignment = scope.classroom.assignments[0];
       var student1 = scope.classroom.students[0];
       var student2 = scope.classroom.students[1];
