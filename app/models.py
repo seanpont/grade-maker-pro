@@ -58,7 +58,7 @@ class Student(ndb.Model):
 
 class GradeWeight(ndb.Model):
     category = ndb.StringProperty(required=True)
-    weight = ndb.IntegerProperty(required=True, default=100)
+    weight = ndb.FloatProperty(required=True, default=100)
 
 
 class Classroom(ndb.Model):
@@ -75,7 +75,6 @@ class Classroom(ndb.Model):
         return classroom
 
     def upsert_grade_weight(self, category):
-        category = category.lower()
         if category not in [gw.category for gw in self.grade_weights]:
             self.grade_weights.append(GradeWeight(category=category))
             self.put()

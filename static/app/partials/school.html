@@ -41,7 +41,7 @@
       <td ng-hide="filter.students">
         <input type="text" ng-model="addStudent.name" class="form-control"
                ng-focus="addStudent.error=null"
-               typeahead="name for name in collectNames(students()) | filter:$viewValue"
+               typeahead="name for name in addStudent.typeahead() | filter:$viewValue"
                style="width: 150px; display: inline-block;">
         <input type="submit" ng-disabled="addStudent.inProgress" ng-click="addStudent.submit()" value="+ Add Student"
                class="btn btn-default" style="display: inline-block; width: 120px; margin-top: -2px">
@@ -53,8 +53,7 @@
       <td>Due Date</td>
       <td>Total Points</td>
       <td ng-repeat="student in classroom.students | filter:filter.students | orderBy:'last_name'">
-        <span>{{ asRatio(gradeFor(classroom, student)) }}</span>
-        <span class="pull-right">{{ asPercent(gradeFor(classroom, student)) }}</span>
+        {{ asPercent(gradeFor(classroom, student)) }}
       </td>
     </tr>
     <tr ng-repeat="assignment in classroom.assignments | orderBy: 'due_date'">

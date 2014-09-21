@@ -101,13 +101,14 @@ describe('GraderApp controllers', function () {
     });
 
     var classroom = {
+      id: 1234,
       name: 'Phoenix',
-      id: 1234
+      grade_weights: {}
     };
 
     var assignment = {
       id: 8492,
-      name: 'Quiz 1',
+      category: 'Quiz',
       due_date: '09/19/2014',
       points: 100,
       grades: {
@@ -123,7 +124,8 @@ describe('GraderApp controllers', function () {
         {name: 'Bobby', id: 2345},
         {name: 'Jimmy', id: 3456}
       ],
-      assignments: [ assignment ]
+      assignments: [ assignment ],
+      grade_weights: {'quiz': 100}
     };
 
     it('should be able to display a classroom', function () {
@@ -178,17 +180,16 @@ describe('GraderApp controllers', function () {
 
       scope.addAssignment.submit();
       expect(scope.addAssignment.error).toMatch('Please.*')
-      scope.addAssignment.name = "Quiz 1";
+      scope.addAssignment.category = "Quiz";
       scope.addAssignment.dueDate = '09/19/2014';
       scope.addAssignment.points = 100;
       scope.addAssignment.submit();
       $httpBackend.expectPOST(
           '/api/classroom/' + scope.classroom.id + '/assignment',
         {
-          name: scope.addAssignment.name,
+          category: scope.addAssignment.category,
           due_date: scope.addAssignment.dueDate,
-          points: scope.addAssignment.points,
-          classroom_id: scope.classroom.id
+          points: scope.addAssignment.points
         }).respond(assignment);
       $httpBackend.flush();
       expect(scope.classroom.assignments.length).toBe(2);

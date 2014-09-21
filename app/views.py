@@ -73,7 +73,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     def data(self):
         _ = self.request.body  # if not called, body_file is empty
-        return json.load(self.request.body_file)
+        return atterize(json.load(self.request.body_file))
 
     def datum(self, *args):
         data = self.data()
@@ -215,20 +215,35 @@ class ClassroomsHandler(AuthorizedHandler):
         name = self.datum('name')
         self.check(name)
         classroom = models.Classroom.create(name, self.user)
-        self.write(classroom)
+        self.write_classroom(classroom)
 
-
-@route('/api/classroom/(\d+)/?')
-class ClassroomHandler(AuthorizedHandler):
-    def get(self, classroom_id):
-        classroom = models.Classroom.by_id(self.school_key, classroom_id)
-        self.check(classroom, 404)
+    def write_classroom(self, classroom):
         students = ndb.get_multi(classroom.students)
         assignments = models.Assignment.query(ancestor=classroom.key)
         response = models.to_dict(classroom)
         response['students'] = [models.to_dict(student) for student in students]
         response['assignments'] = [models.to_dict(assignment) for assignment in assignments]
         self.write(response)
+
+
+# noinspection PyMethodOverriding
+@route('/api/classroom/(\d+)/?')
+class ClassroomHandler(ClassroomsHandler):
+    def get(self, classroom_id):
+        classroom = models.Classroom.by_id(self.school_key, classroom_id)
+        self.check(classroom, 404)
+        self.write_classroom(classroom)
+
+    def post(self, classroom_id):
+        classroom = models.Classroom.by_id(self.school_key, classroom_id)
+        self.check(classroom, 404)
+        data = self.data()
+        classroom.name = data.name
+        for category in data.grade_weights:
+            grade_weight = find(classroom.grade_weights, lambda gw: gw.category == category)
+            grade_weight.weight = data.grade_weights[category]
+        classroom.put()
+        self.write_classroom(classroom)
 
 
 # ===== ASSIGNMENT ===============================================================
@@ -252,7 +267,7 @@ class AssignmentHandler(AuthorizedHandler):
         classroom_id, assignment_id = int(classroom_id), int(assignment_id)
         assignment = models.Assignment.by_id(self.school_key, classroom_id, assignment_id)
         self.check(assignment, 404)
-        updated_assignment = atterize(self.data())
+        updated_assignment = self.data()
         assignment.name = updated_assignment.name
         assignment.due_date = parse_date(updated_assignment.due_date)
         assignment.points = int(updated_assignment.points)

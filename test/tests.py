@@ -171,13 +171,25 @@ class UnitTest(unittest.TestCase):
         self.create_assignment(classroom, category='Quiz')
         self.create_assignment(classroom, category='Homework')
         self.create_assignment(classroom, category='Test')
-        self.create_assignment(classroom, category='quiz')
+        self.create_assignment(classroom, category='Quiz')
         classroom = self.get_classroom(classroom)
         print classroom
         self.assertEqual(len(classroom.grade_weights), 3)
         expected = {
-            'quiz': 100,
-            'homework': 100,
-            'test': 100
+            'Quiz': 100,
+            'Homework': 100,
+            'Test': 100
         }
         self.assertEqual(classroom.grade_weights, expected)
+        classroom['name'] = 'Phoenix II'
+        classroom['grade_weights'] = {
+            'Quiz': 20,
+            'Homework': 20,
+            'Test': 60
+        }
+        logging.info(classroom)
+        classroom = self.post('/api/classroom/%s' % classroom.id, classroom)
+        self.assertEqual(classroom.name, 'Phoenix II')
+        self.assertEqual(classroom.grade_weights['Quiz'], 20)
+        self.assertEqual(classroom.grade_weights['Homework'], 20)
+        self.assertEqual(classroom.grade_weights['Test'], 60)
