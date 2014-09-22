@@ -14,6 +14,7 @@ import json
 import urllib
 from string import Template
 import base64
+import re
 from functools import wraps
 from collections import defaultdict, Iterable
 
@@ -254,6 +255,8 @@ class AssignmentsHandler(AuthorizedHandler):
     def post(self, classroom_id):
         category, due_date, points = self.datum('category', 'due_date', 'points')
         self.check(category and due_date and points, message='category, due_date, and points required')
+        logging.info(due_date)
+        self.check(re.match('\d{4}-\d{2}-\d{2}', due_date), message='date is malformed or missing')
         classroom = models.Classroom.by_id(self.school_key, classroom_id)
         self.check(classroom, 404, "Classroom not found")
         assignment = models.Assignment.create(classroom, category, parse_date(due_date), int(points))

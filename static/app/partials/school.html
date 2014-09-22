@@ -103,7 +103,7 @@
       <td>Weight</td>
       <td>Percentage</td>
     </tr>
-    <tr ng-repeat="category in keys(classroom.grade_weights)">
+    <tr ng-repeat="category in keys(classroom.grade_weights) | orderBy:identity">
       <td>
         {{ category }}
       </td>

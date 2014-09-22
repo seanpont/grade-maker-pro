@@ -104,6 +104,8 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       students: null
     };
 
+    $scope.identity = angular.identity;
+
     $scope.collectNames = function (students) {
       var names = [];
       angular.forEach(students, function (student) {

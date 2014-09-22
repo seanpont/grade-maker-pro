@@ -116,6 +116,9 @@ class Teacher(ndb.Model):
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
 
+    def to_dict(self):
+        return {'name': self.name, 'email': self.email}
+
     @classmethod
     def key_for(cls, email):
         return ndb.Key(School, domain_of(email), Teacher, email.lower())
