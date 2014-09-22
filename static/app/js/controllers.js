@@ -97,11 +97,25 @@ graderControllers.controller('VerifyCtrl', ['$scope', '$http', '$location', '$co
 
 // ===== SCHOOL ======================================================================
 
-graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Student', 'Assignment',
-  function ($scope, $http, Classroom, Student, Assignment) {
+graderControllers.controller('SchoolCtrl', ['$scope', '$http', '$timeout', 'Classroom', 'Student', 'Assignment',
+  function ($scope, $http, $timeout, Classroom, Student, Assignment) {
 
     $scope.filter = {
       students: null
+    };
+
+    var sync = {
+      idGenerator: 0,
+      schedule: function (target, func) {
+        var syncId = sync.idGenerator += 1;
+        target.syncId = syncId;
+        $timeout(function () {
+          if (target.syncId == syncId) {
+            console.log("synchronizing " + syncId);
+            func();
+          }
+        }, 3000);
+      }
     };
 
     $scope.identity = angular.identity;
@@ -131,7 +145,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       create: function () {
         var name = $scope.createClassroom.name;
         if (!name) {
-          $scope.createClassroom.error = 'Please include a name (like "7th grade Math Spring 2013")'
+          $scope.createClassroom.error = 'Please include a name (like "7th grade Math Spring 2013")';
           return;
         }
         $scope.createClassroom.inProgress = true;
@@ -167,6 +181,13 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       }
     };
 
+    $scope.updateClassroom = function () {
+      var classroom = $scope.classroom;
+      sync.schedule(classroom, function() {
+        classroom.$save();
+      })
+    };
+
     // ----- STUDENTS -----------------------------------------------------------------
 
     $scope.addStudent = {
@@ -194,7 +215,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       },
       typeahead: function () {
         // Collect students from all classrooms, then filter out those from
-        var studentsInClassroom = $scope.classroom.students.map(function(student) {
+        var studentsInClassroom = $scope.classroom.students.map(function (student) {
           return student.id
         });
         return $scope.classrooms.map(function (c) {
@@ -253,7 +274,10 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
     // ----- GRADES -----------------------------------------------------------------
 
     $scope.updateAssignment = function (assignment) {
-      Assignment.save({classroom_id: $scope.classroom.id, assignment_id: assignment.id}, assignment)
+      var classroom_id = $scope.classroom.id;
+      sync.schedule(assignment, function () {
+        Assignment.save({classroom_id: classroom_id, assignment_id: assignment.id}, assignment);
+      });
     };
 
     $scope.gradeFor = function (classroom, student) {
@@ -289,7 +313,7 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', 'Classroom', 'Stu
       var s = 0;
       angular.forEach(items, function (item) {
         s += item
-      })
+      });
       return s;
     };
 
