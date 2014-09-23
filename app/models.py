@@ -34,7 +34,8 @@ class Student(ndb.Model):
     def to_dict(self):
         student = super(Student, self).to_dict()
         name_parts = self.name.split(' ')
-        student['last_name'] = name_parts[min(len(name_parts), 1)]
+        name_parts.reverse()
+        student['last_name'] = ' '.join(name_parts)
         return student
 
     @classmethod

@@ -111,7 +111,6 @@ graderControllers.controller('SchoolCtrl', ['$scope', '$http', '$timeout', 'Clas
         target.syncId = syncId;
         $timeout(function () {
           if (target.syncId == syncId) {
-            console.log("synchronizing " + syncId);
             func();
           }
         }, 3000);

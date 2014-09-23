@@ -20,14 +20,15 @@ describe('GraderApp controllers', function () {
     classrooms: [1, 2, 3]
   };
 
-  var scope, ctrl, $controller, $location, $httpBackend, $cookies;
+  var scope, ctrl, $controller, $location, $httpBackend, $cookies, $timeout;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _$location_, _$controller_, _$cookies_) {
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _$location_, _$controller_, _$cookies_, _$timeout_) {
     $httpBackend = _$httpBackend_;
     $location = _$location_;
     $controller = _$controller_;
     scope = $rootScope.$new();
     $cookies = _$cookies_;
+    $timeout = _$timeout_;
   }));
 
   // ===== SignInCtrl ======================================================================
@@ -203,7 +204,9 @@ describe('GraderApp controllers', function () {
       scope.updateAssignment(scope.classroom.assignments[0]);
       $httpBackend.expectPOST('/api/classroom/' + scope.classroom.id + '/assignment/' + assignment.id,
         assignment).respond(assignment);
+      $timeout.flush();
       $httpBackend.flush();
+      expect(scope.classroom.assignments[0].grades[student.id]).toBe(97);
     });
 
   })
